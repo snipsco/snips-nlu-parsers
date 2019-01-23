@@ -8,8 +8,10 @@ export PATH="$HOME/.cargo/bin:$PATH"
 cargo build --all
 cargo test --all
 
-echo "Running python tests..."
-cd python
-python -m pip install tox
-tox
-cd ../..
+if [ "$TRAVIS_BRANCH" == "master" ]; then
+  echo "Running python tests..."
+  cd python
+  python -m pip install tox
+  tox
+  cd ../..
+fi
