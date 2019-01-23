@@ -2,25 +2,25 @@ language: python
 
 jobs:
   include:
-    - if: env(TRAVIS_BRANCH) = master or branch =~ /^main\/.+$/
+    - if: $TRAVIS_BRANCH = master or branch =~ /^main\/.+$/
       os: osx
       osx_image: xcode8
       language: generic
       env:
         - TOXENV=py27
-    - if: env(TRAVIS_BRANCH) = master or branch =~ /^main\/.+$/
+    - if: $TRAVIS_BRANCH = master or branch =~ /^main\/.+$/
       os: osx
       osx_image: xcode8
       language: generic
       env:
         - TOXENV=py36
-    - if: env(TRAVIS_BRANCH) = master or branch =~ /^main\/.+$/
+    - if: $TRAVIS_BRANCH = master or branch =~ /^main\/.+$/
       os: osx
       osx_image: xcode8
       language: generic
       env:
         - TOXENV=py37
-    - if: env(TRAVIS_BRANCH) = master or branch =~ /^main\/.+$/
+    - if: $TRAVIS_BRANCH = master or branch =~ /^main\/.+$/
       os: linux
       python: 2.7
       env:
@@ -29,7 +29,7 @@ jobs:
       python: 3.6
       env:
         - TOXENV=py36
-    - if: env(TRAVIS_BRANCH) = master or branch =~ /^main\/.+$/
+    - if: $TRAVIS_BRANCH = master or branch =~ /^main\/.+$/
       os: linux
       python: 3.7
       # cf https://github.com/travis-ci/travis-ci/issues/9815
