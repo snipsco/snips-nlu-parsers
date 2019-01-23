@@ -248,11 +248,11 @@ impl BuiltinEntityParser {
 mod test {
     use super::*;
 
+    use crate::test_utils::test_path;
     use snips_nlu_ontology::language::Language;
     use snips_nlu_ontology::IntoBuiltinEntityKind;
     use snips_nlu_ontology::SlotValue::InstantTime;
     use tempfile::tempdir;
-    use crate::test_utils::test_path;
 
     #[test]
     fn test_entities_extraction() {

@@ -10,3 +10,4 @@ mod utils;
 pub use builtin_entity_parser::*;
 pub use conversion::*;
 pub use gazetteer_parser::*;
+pub use snips_nlu_ontology::*;

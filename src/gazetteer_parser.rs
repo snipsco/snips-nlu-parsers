@@ -261,13 +261,13 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::test_utils::test_path;
     use gazetteer_entity_parser::EntityValue;
     use gazetteer_entity_parser::ParserBuilder;
     use snips_nlu_ontology::{
         BuiltinEntityKind, BuiltinGazetteerEntityKind, SlotValue, StringValue,
     };
     use tempfile::tempdir;
-    use crate::test_utils::test_path;
 
     fn get_test_custom_gazetteer_parser() -> GazetteerParser<String> {
         let artist_entity_parser_builder = get_test_music_artist_parser_builder();
