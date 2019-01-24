@@ -1,0 +1,56 @@
+environment:
+  matrix:
+  - PYTHON: "C:\\Python27-x64"
+    TARGET: x86_64-pc-windows-msvc
+  - PYTHON: "C:\\Python36-x64"
+    TARGET: x86_64-pc-windows-msvc
+  - PYTHON: "C:\\Python37-x64"
+    TARGET: x86_64-pc-windows-msvc
+
+branches:
+  only:
+  - develop
+  - master
+
+install:
+  - if "%APPVEYOR_REPO_BRANCH%" == "develop" if NOT "%APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH:~0,8%" == "release/" if NOT "%APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH:~0,5%" == "main/" appveyor exit
+  - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init.exe -y --default-host %TARGET%
+  - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
+  - if defined MSYS2_BITS set PATH=%PATH%;C:\msys64\mingw%MSYS2_BITS%\bin
+  - rustc -V
+  - cargo -V
+  - ps: (Get-Content python/ffi/Cargo.toml) | ForEach-Object { $_ -replace "^snips-nlu-parsers-ffi-macros = .*$", "snips-nlu-parsers-ffi-macros = { path = `"../../ffi/ffi-macros`" }" } | Set-Content python/ffi/Cargo.toml
+  - "%PYTHON%\\python.exe -m pip install -r python/requirements.txt"
+
+build: false
+
+test_script:
+  - cargo build --verbose
+  - cargo test --all --verbose
+  - cd python
+  - "%PYTHON%\\python.exe -m pip install -e . --verbose --install-option=\"--verbose\""
+  - "%PYTHON%\\python.exe -m unittest discover"
+
+after_test:
+  - ECHO "BUILDING WHEELS..."
+  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+
+artifacts:
+  - path: python\dist\*
+    name: pypiartifacts
+
+for:
+-
+  branches:
+    only:
+      - master
+
+  environment:
+    matrix:
+    - PYTHON: "C:\\Python27"
+      TARGET: i686-pc-windows-msvc
+    - PYTHON: "C:\\Python36"
+      TARGET: i686-pc-windows-msvc
+    - PYTHON: "C:\\Python37"
+      TARGET: i686-pc-windows-msvc
