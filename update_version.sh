@@ -8,14 +8,12 @@ find . -name "Cargo.toml" -exec perl -p -i -e "s/^version = \".*\"$/version = \"
 
 if [[ "${NEW_VERSION}" == "${NEW_VERSION/-SNAPSHOT/}" ]]
 then
-    perl -p -i -e "s/snips-nlu-parsers\", tag = \".*\"/snips-nlu-parsers\", tag = \"$NEW_VERSION\"/g" \
-        python/ffi/Cargo.toml
-    perl -p -i -e "s/snips-nlu-parsers\", branch = \".*\"/snips-nlu-parsers\", tag = \"$NEW_VERSION\"/g" \
+    perl -p -i -e \
+        "s/^snips-nlu-parsers-ffi-macros = \{.*\}$/snips-nlu-parsers-ffi-macros = { git = \"https:\/\/github.com\/snipsco\/snips-nlu-parsers\", tag = \"$NEW_VERSION\" }/g" \
         python/ffi/Cargo.toml
 else
-    perl -p -i -e "s/snips-nlu-parsers\", branch = \".*\"/snips-nlu-parsers\", branch = \"develop\"/g" \
-        python/ffi/Cargo.toml
-    perl -p -i -e "s/snips-nlu-parsers\", tag = \".*\"/snips-nlu-parsers\", branch = \"develop\"/g" \
+    perl -p -i -e \
+        "s/^snips-nlu-parsers-ffi-macros = \{.*\}$/snips-nlu-parsers-ffi-macros = { path = \"..\/..\/ffi\/ffi-macros\" }/g" \
         python/ffi/Cargo.toml
 fi
 

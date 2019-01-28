@@ -1,3 +1,5 @@
+pub extern crate gazetteer_entity_parser;
+
 pub mod errors;
 
 mod builtin_entity_parser;
