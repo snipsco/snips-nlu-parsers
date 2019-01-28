@@ -5,9 +5,7 @@ use libc;
 use serde_json;
 
 use crate::Result;
-use ffi_utils::{
-    convert_to_c_string, convert_to_c_string_result, CReprOf, CStringArray, RawPointerConverter,
-};
+use ffi_utils::{convert_to_c_string, CReprOf, CStringArray, RawPointerConverter};
 use snips_nlu_parsers::{GazetteerEntityMatch, GazetteerParser, GazetteerParserBuilder};
 
 #[repr(C)]

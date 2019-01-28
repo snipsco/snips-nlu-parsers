@@ -1,5 +1,7 @@
 language: python
 conditions: v1
+cache:
+  - cargo
 
 matrix:
   include:
