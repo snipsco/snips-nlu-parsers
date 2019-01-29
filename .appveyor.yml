@@ -40,6 +40,11 @@ artifacts:
   - path: python\dist\*
     name: pypiartifacts
 
+cache:
+- target
+- python\ffi\target
+- C:\Users\appveyor\.cargo\registry
+
 for:
 -
   branches:
