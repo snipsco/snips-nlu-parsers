@@ -1,44 +1,58 @@
-language: python
 conditions: v1
 cache:
   - cargo
+  - directories:
+    - python/ffi/target
 
 matrix:
   include:
-    - if: branch = master
-      os: osx
-      osx_image: xcode8
-      language: generic
+    - language: rust
+      rust: stable
       env:
-        - TOXENV=py27
-    - if: branch = master
-      os: osx
-      osx_image: xcode8
-      language: generic
-      env:
-        - TOXENV=py36
-    - if: branch = master
-      os: osx
-      osx_image: xcode8
-      language: generic
-      env:
-        - TOXENV=py37
-    - if: branch = master
-      os: linux
-      python: 2.7
-      env:
-        - TOXENV=py27
+        - RUST_TESTS=true
     - os: linux
+      language: python
       python: 3.6
       env:
+        - PYTHON_TESTS=true
         - TOXENV=py36
     - if: branch = master
       os: linux
+      language: python
+      python: 2.7
+      env:
+        - PYTHON_TESTS=true
+        - TOXENV=py27
+    - if: branch = master
+      os: linux
+      language: python
       python: 3.7
-      # cf https://github.com/travis-ci/travis-ci/issues/9815
+        # cf https://github.com/travis-ci/travis-ci/issues/9815
       dist: xenial
       sudo: true
       env:
+        - PYTHON_TESTS=true
+        - TOXENV=py37
+    - if: branch = master
+      os: osx
+      osx_image: xcode8
+      language: generic
+      env:
+        - PYTHON_TESTS=true
+        - TOXENV=py27
+    - if: branch = master
+      os: osx
+      osx_image: xcode8
+      language: generic
+      env:
+        - PYTHON_TESTS=true
+        - TOXENV=py36
+    - if: branch = master
+      os: osx
+      osx_image: xcode8
+      language: generic
+      env:
+        - PYTHON_TESTS=true
         - TOXENV=py37
 
 before_install: . ./.travis/before_install.sh
