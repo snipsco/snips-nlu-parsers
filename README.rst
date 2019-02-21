@@ -7,8 +7,10 @@ Snips NLU Parsers
 .. image:: https://ci.appveyor.com/api/projects/status/github/snipsco/snips-nlu-parsers?branch=develop&svg=true
    :target: https://ci.appveyor.com/project/snipsco/snips-nlu-parsers
 
-This crate provides APIs to extract entities in the context of a Natural Language Understanding (NLU)
+This Rust crate provides APIs to extract entities in the context of a Natural Language Understanding (NLU)
 task.
+
+A `Python wrapper <python>`_ is also available.
 
 Installation
 ------------
