@@ -1,9 +1,10 @@
 #!/bin/bash
 set -ev
 
+export PATH="$HOME/.cargo/bin:$PATH"
+
 if [[ "${RUST_TESTS}" == "true" ]]; then
     echo "Running rust tests..."
-    export PATH="$HOME/.cargo/bin:$PATH"
     cargo build --all
     cargo test --all
 fi
