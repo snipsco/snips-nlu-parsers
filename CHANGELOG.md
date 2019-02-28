@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2.0] - 2019-02-27
 ### Changed
-- bump `snips-nlu-ontology` to `0.64.0`
+- bump `snips-nlu-ontology` to `0.64.4`
 - bump `rustling-ontology` to `0.18.0`
 - bump `snips-nlu-utils` to `0.8.0`
 
