@@ -4,9 +4,11 @@ Snips NLU Parsers
 Installation
 ------------
 
--------------
-Linux / MacOS
--------------
+--------------------------------------
+Linux x86 / MacOS (>= 10.11) / Windows
+--------------------------------------
+
+Wheels and source distribution are available for Python2.7 as well as Python >= 3.4
 
 .. code-block:: bash
 
@@ -38,3 +40,30 @@ Finally, you can install ``snips-nlu-parsers`` using pip:
 
     pip install snips-nlu-parsers
 
+
+Usage
+-----
+
+.. code-block:: python
+
+   >>> from snips_nlu_parsers import BuiltinEntityParser
+   >>> import json
+   >>> parser = BuiltinEntityParser.build(language="en")
+   >>> parsing = parser.parse("what will be the weather in three days ?")
+   >>> print(json.dumps(parsing, indent=2))
+   [
+     {
+       "value": "in three days",
+       "range": {
+         "start": 25,
+         "end": 38
+       },
+       "entity": {
+         "kind": "InstantTime",
+         "value": "2019-02-24 00:00:00 +01:00",
+         "grain": "Day",
+         "precision": "Exact"
+       },
+       "entity_kind": "snips/datetime"
+     }
+   ]
