@@ -12,7 +12,7 @@ fi
 if [[ "${PYTHON_TESTS}" == "true" ]]; then
   echo "Running python tests..."
   cd python
-  python -m pip install tox
+  pip install tox
   tox
   cd ../..
 fi
