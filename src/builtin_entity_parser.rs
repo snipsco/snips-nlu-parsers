@@ -256,9 +256,29 @@ mod test {
     fn test_entities_extraction() {
         let parser = BuiltinEntityParserLoader::new(Language::EN).load().unwrap();
         assert_eq!(
-            vec![BuiltinEntityKind::Number, BuiltinEntityKind::Datetime],
+            vec![BuiltinEntityKind::Number, BuiltinEntityKind::Date],
             parser
-                .extract_entities("Book me restaurant for two people tomorrow", None)
+                .extract_entities("Book me a restaurant for two people tomorrow", None)
+                .unwrap()
+                .iter()
+                .map(|e| e.entity_kind)
+                .collect_vec()
+        );
+
+        assert_eq!(
+            vec![BuiltinEntityKind::Datetime],
+            parser
+                .extract_entities("Book me a restaurant for tomorrow", Some(&[BuiltinEntityKind::Datetime]))
+                .unwrap()
+                .iter()
+                .map(|e| e.entity_kind)
+                .collect_vec()
+        );
+
+        assert_eq!(
+            vec![BuiltinEntityKind::Datetime],
+            parser
+                .extract_entities("Book me a restaurant for tomorrow at 8pm", None)
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -268,11 +288,31 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Date],
             parser
-                .extract_entities("Book me restaurant for tomorrow", Some(&[BuiltinEntityKind::Date]))
+                .extract_entities("Book me a restaurant for tomorrow", Some(&[BuiltinEntityKind::Date]))
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
                 .collect_vec()
+        );
+
+        assert_eq!(
+            vec![BuiltinEntityKind::TimePeriod],
+            parser
+                .extract_entities("Book the meeting room from 10am to 11am", None)
+                .unwrap()
+                .iter()
+                .map(|e| e.entity_kind)
+                .collect_vec()
+        );
+
+        assert_eq!(
+            vec![BuiltinEntityKind::Time, BuiltinEntityKind::Time],
+            parser
+                .extract_entities("Book the meeting room from 10am to 11am", Some(&[BuiltinEntityKind::Time]))
+            .unwrap()
+            .iter()
+            .map(|e| e.entity_kind)
+            .collect_vec()
         );
 
         assert_eq!(
