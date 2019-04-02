@@ -103,7 +103,7 @@ impl BuiltinEntityParser {
                 .parse_with_kind_order(&sentence.to_lowercase(), &context, &rustling_output_kinds)
                 .unwrap_or_else(|_| vec![])
                 .into_iter()
-                .map(|parser_match| rustling::convert_to_builtin(sentence, parser_match, &self.language))
+                .map(|parser_match| rustling::convert_to_builtin(sentence, parser_match))
                 .sorted_by(|a, b| Ord::cmp(&a.range.start, &b.range.start))
         };
 
@@ -256,9 +256,19 @@ mod test {
     fn test_entities_extraction() {
         let parser = BuiltinEntityParserLoader::new(Language::EN).load().unwrap();
         assert_eq!(
-            vec![BuiltinEntityKind::Number, BuiltinEntityKind::Date],
+            vec![BuiltinEntityKind::Number, BuiltinEntityKind::Datetime],
             parser
                 .extract_entities("Book me restaurant for two people tomorrow", None)
+                .unwrap()
+                .iter()
+                .map(|e| e.entity_kind)
+                .collect_vec()
+        );
+
+        assert_eq!(
+            vec![BuiltinEntityKind::Date],
+            parser
+                .extract_entities("Book me restaurant for tomorrow", Some(&[BuiltinEntityKind::Date]))
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)

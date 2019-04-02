@@ -2,7 +2,6 @@ use crate::conversion::*;
 use crate::errors::Result;
 use failure::format_err;
 use rustling_ontology::dimension::Precision as RustlingPrecision;
-use rustling_ontology::dimension::DatetimeKind as RustlingDatetimeKind;
 use rustling_ontology::output::{
     AmountOfMoneyOutput, DurationOutput, FloatOutput, IntegerOutput, OrdinalOutput, Output,
     OutputKind, PercentageOutput, TemperatureOutput,
@@ -175,47 +174,18 @@ impl OntologyFrom<Output> for SlotValue {
     }
 }
 
-pub fn convert_to_builtin(input: &str, parser_match: ParserMatch<Output>, language: &Language) -> BuiltinEntity {
+pub fn convert_to_builtin(input: &str, parser_match: ParserMatch<Output>) -> BuiltinEntity {
     BuiltinEntity {
         value: input[parser_match.byte_range.0..parser_match.byte_range.1].into(),
         range: parser_match.char_range.0..parser_match.char_range.1,
         entity: parser_match.value.clone().ontology_into(),
-        entity_kind: BuiltinEntityKind::ontology_from(&parser_match.value).map_to_supported(language),
+        entity_kind: BuiltinEntityKind::ontology_from(&parser_match.value),
     }
 }
 
 impl<'a> OntologyFrom<&'a Output> for BuiltinEntityKind {
     fn ontology_from(output: &Output) -> Self {
-        match *output {
-            Output::AmountOfMoney(_) => BuiltinEntityKind::AmountOfMoney,
-            Output::Duration(_) => BuiltinEntityKind::Duration,
-            Output::Float(_) => BuiltinEntityKind::Number,
-            Output::Integer(_) => BuiltinEntityKind::Number,
-            Output::Ordinal(_) => BuiltinEntityKind::Ordinal,
-            Output::Temperature(_) => BuiltinEntityKind::Temperature,
-            Output::Percentage(_) => BuiltinEntityKind::Percentage,
-            Output::Datetime(datetime_output_value) => {
-                match datetime_output_value.datetime_kind {
-                    // Only Date and Time should occur here
-                    RustlingDatetimeKind::Date => BuiltinEntityKind::Date,
-                    RustlingDatetimeKind::Time => BuiltinEntityKind::Time,
-                    RustlingDatetimeKind::DatePeriod => BuiltinEntityKind::DatePeriod,
-                    RustlingDatetimeKind::TimePeriod => BuiltinEntityKind::TimePeriod,
-                    _ => BuiltinEntityKind::Datetime
-                }
-            },
-            Output::DatetimeInterval(datetime_interval_output_value) => {
-                match datetime_interval_output_value.datetime_kind {
-                    // Only DatePeriod and TimePeriod should occur here
-                    RustlingDatetimeKind::Date => BuiltinEntityKind::Date,
-                    RustlingDatetimeKind::Time => BuiltinEntityKind::Time,
-                    RustlingDatetimeKind::DatePeriod => BuiltinEntityKind::DatePeriod,
-                    RustlingDatetimeKind::TimePeriod => BuiltinEntityKind::TimePeriod,
-                    _ => BuiltinEntityKind::Datetime
-                }
-            },
-
-        }
+        BuiltinEntityKind::ontology_from(&output.kind())
     }
 }
 
