@@ -2,6 +2,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
+import json
 from _ctypes import byref, pointer
 from builtins import range, str
 from ctypes import c_char_p, string_at
@@ -19,6 +20,8 @@ _ALL_GAZETTEER_ENTITIES = None
 _ALL_GRAMMAR_ENTITIES = None
 _BUILTIN_ENTITIES_SHORTNAMES = dict()
 _ONTOLOGY_VERSION = None
+_COMPLETE_ENTITY_ONTOLOGY = None
+_LANGUAGE_ENTITY_ONTOLOGY = dict()
 
 
 def get_ontology_version():
@@ -196,3 +199,32 @@ def get_builtin_entity_examples(builtin_entity_kind, language):
             _ENTITIES_EXAMPLES[builtin_entity_kind][language] = list(
                 array.data[i].decode("utf8") for i in range(array.size))
     return _ENTITIES_EXAMPLES[builtin_entity_kind][language]
+
+
+def get_complete_entity_ontology():
+    """Lists the complete entity ontology for all languages in JSON format
+    """
+    global _COMPLETE_ENTITY_ONTOLOGY
+    if _COMPLETE_ENTITY_ONTOLOGY is None:
+        with string_pointer(c_char_p()) as ptr:
+            exit_code = lib.snips_nlu_ontology_complete_entity_ontology_json(byref(ptr))
+            check_ffi_error(exit_code, "Something went wrong when retrieving "
+                                       "complete entity ontology")
+            json_str = string_at(ptr).decode("utf8")
+            _COMPLETE_ENTITY_ONTOLOGY = json.loads(json_str, encoding="utf8")
+    return _COMPLETE_ENTITY_ONTOLOGY
+
+
+def get_language_entity_ontology(language):
+    """Lists the complete entity ontology for the specified language in JSON format
+    """
+    global _LANGUAGE_ENTITY_ONTOLOGY
+    if language not in _LANGUAGE_ENTITY_ONTOLOGY:
+        with string_pointer(c_char_p()) as ptr:
+            exit_code = lib.snips_nlu_ontology_language_entity_ontology_json(
+                language.encode("utf8"), byref(ptr))
+            check_ffi_error(exit_code, "Something went wrong when retrieving "
+                                       "language entity ontology")
+            json_str = string_at(ptr).decode("utf8")
+            _LANGUAGE_ENTITY_ONTOLOGY[language] = json.loads(json_str, encoding="utf8")
+    return _LANGUAGE_ENTITY_ONTOLOGY[language]
