@@ -7,7 +7,8 @@ from snips_nlu_parsers.builtin_entities import (
     get_all_builtin_entities, get_all_gazetteer_entities,
     get_all_grammar_entities, get_all_languages, get_builtin_entity_examples,
     get_builtin_entity_shortname, get_ontology_version, get_supported_entities,
-    get_supported_gazetteer_entities, get_supported_grammar_entities)
+    get_supported_gazetteer_entities, get_supported_grammar_entities,
+    get_complete_entity_ontology, get_language_entity_ontology)
 
 
 class TestBuiltinEntities(unittest.TestCase):
@@ -101,3 +102,21 @@ class TestBuiltinEntities(unittest.TestCase):
                 examples = get_builtin_entity_examples(builtin_entity,
                                                        language)
                 self.assertGreaterEqual(len(examples), 1)
+
+    def test_should_get_complete_entity_ontology(self):
+        # When
+        complete_ontology = get_complete_entity_ontology()
+
+        # Then
+        self.assertTrue(len(complete_ontology) > 0)
+        for configuration in complete_ontology:
+            self.assertTrue("language" in configuration)
+            self.assertTrue("entities" in configuration)
+
+    def test_should_get_language_entity_ontology(self):
+        # When
+        language_entity_ontology = get_language_entity_ontology("en")
+
+        # Then
+        self.assertEqual(language_entity_ontology["language"], "en")
+        self.assertTrue(len(language_entity_ontology["entities"]) > 0)
