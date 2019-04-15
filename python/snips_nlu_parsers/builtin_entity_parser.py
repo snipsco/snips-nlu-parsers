@@ -73,7 +73,7 @@ class BuiltinEntityParser(object):
             return json.loads(result.decode("utf8"))
 
     def persist(self, path):
-        """Persist the gazetteer parser on disk at the provided path"""
+        """Persist the builtin entity parser on disk at the provided path"""
         if isinstance(path, Path):
             path = str(path)
         exit_code = lib.snips_nlu_parsers_persist_builtin_entity_parser(
@@ -83,12 +83,12 @@ class BuiltinEntityParser(object):
 
     @classmethod
     def from_path(cls, parser_path):
-        """Create a :class:`GazetteerEntityParser` from a gazetteer parser
+        """Create a :class:`BuiltinEntityParser` from a builtin entity parser
         persisted on disk
         """
         if isinstance(parser_path, Path):
             parser_path = str(parser_path)
-        parser = pointer(c_void_p())
+        parser = c_void_p()
         parser_path = bytes(parser_path, encoding="utf8")
         exit_code = lib.snips_nlu_parsers_load_builtin_entity_parser(
             byref(parser), parser_path)

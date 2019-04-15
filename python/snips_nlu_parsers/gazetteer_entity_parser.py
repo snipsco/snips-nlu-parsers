@@ -113,7 +113,7 @@ class GazetteerEntityParser(object):
         """
         if isinstance(parser_path, Path):
             parser_path = str(parser_path)
-        parser = pointer(c_void_p())
+        parser = c_void_p()
         parser_path = bytes(parser_path, encoding="utf8")
         exit_code = lib.snips_nlu_parsers_load_gazetteer_entity_parser(
             byref(parser), parser_path)
