@@ -3,17 +3,19 @@ use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use crate::conversion::*;
-use crate::errors::*;
-use crate::gazetteer_parser::GazetteerParser;
-use crate::utils::{get_ranges_mapping, NON_SPACE_REGEX, NON_SPACE_SEPARATED_LANGUAGES};
 use failure::{format_err, ResultExt};
+pub use gazetteer_entity_parser::EntityValue;
 use itertools::Itertools;
 use rustling_ontology::{build_parser, OutputKind, Parser as RustlingParser, ResolverContext};
 use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use snips_nlu_ontology::*;
 use snips_nlu_utils::string::{convert_to_byte_range, convert_to_char_index};
+
+use crate::conversion::*;
+use crate::errors::*;
+use crate::gazetteer_parser::GazetteerParser;
+use crate::utils::{get_ranges_mapping, NON_SPACE_REGEX, NON_SPACE_SEPARATED_LANGUAGES};
 
 pub struct BuiltinEntityParser {
     gazetteer_parser: Option<GazetteerParser<BuiltinGazetteerEntityKind>>,
@@ -190,6 +192,22 @@ impl BuiltinEntityParser {
     }
 }
 
+impl BuiltinEntityParser {
+    pub fn extend_gazetteer_entity(
+        &mut self,
+        entity_kind: BuiltinGazetteerEntityKind,
+        entity_values: Vec<EntityValue>,
+    ) -> Result<()> {
+        self.gazetteer_parser
+            .as_mut()
+            .map(|gazetteer_parser| {
+                gazetteer_parser.extend_gazetteer_entity(entity_kind, entity_values)
+            })
+            .transpose()?
+            .ok_or_else(|| format_err!("No gazetteer parser found for entity '{:?}'", entity_kind))
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BuiltinParserMetadata {
     pub language: String,
@@ -246,13 +264,14 @@ impl BuiltinEntityParser {
 
 #[cfg(test)]
 mod test {
-    use super::*;
-
-    use crate::test_utils::test_path;
     use snips_nlu_ontology::language::Language;
     use snips_nlu_ontology::IntoBuiltinEntityKind;
     use snips_nlu_ontology::SlotValue::InstantTime;
     use tempfile::tempdir;
+
+    use crate::test_utils::test_path;
+
+    use super::*;
 
     #[test]
     fn test_entities_extraction() {
@@ -338,6 +357,60 @@ mod test {
         };
         assert_eq!(vec![expected_entity], above_threshold_entity);
         assert_eq!(Vec::<BuiltinEntity>::new(), below_threshold_entity);
+    }
+
+    #[test]
+    fn test_entities_extraction_with_extended_gazetteer_entities() {
+        // Given
+        let language = Language::EN;
+        let mut parser = BuiltinEntityParserLoader::new(language)
+            .use_gazetter_parser(test_path().join("builtin_gazetteer_parser"))
+            .load()
+            .unwrap();
+        parser
+            .extend_gazetteer_entity(
+                BuiltinGazetteerEntityKind::MusicArtist,
+                vec![EntityValue {
+                    raw_value: "my extended artist".to_string(),
+                    resolved_value: "My resolved extended artist".to_string(),
+                }],
+            )
+            .unwrap();
+
+        // When
+        let entities = parser
+            .extract_entities("I want to listen to my extended artist please", None)
+            .unwrap();
+
+        // Then
+        let expected_entity = BuiltinEntity {
+            value: "my extended artist".to_string(),
+            range: 20..38,
+            entity: SlotValue::MusicArtist(StringValue {
+                value: "My resolved extended artist".to_string(),
+            }),
+            entity_kind: BuiltinEntityKind::MusicArtist,
+        };
+        assert_eq!(vec![expected_entity], entities);
+    }
+
+    #[test]
+    fn test_should_not_allow_extension_for_missing_entity() {
+        // Given
+        let language = Language::EN;
+        let mut parser = BuiltinEntityParserLoader::new(language).load().unwrap();
+
+        // When
+        let extension_result = parser.extend_gazetteer_entity(
+            BuiltinGazetteerEntityKind::MusicArtist,
+            vec![EntityValue {
+                raw_value: "my extended artist".to_string(),
+                resolved_value: "My resolved extended artist".to_string(),
+            }],
+        );
+
+        // Then
+        assert!(extension_result.is_err());
     }
 
     #[test]

@@ -1,8 +1,8 @@
-mod builtin_entity_parser;
-mod gazetteer_entity_parser;
-
 pub use builtin_entity_parser::*;
 pub use gazetteer_entity_parser::*;
+
+mod builtin_entity_parser;
+mod gazetteer_entity_parser;
 
 type Result<T> = ::std::result::Result<T, ::failure::Error>;
 
@@ -31,6 +31,19 @@ macro_rules! export_nlu_parsers_c_symbols {
             parser_path: *const ::libc::c_char,
         ) -> ::ffi_utils::SNIPS_RESULT {
             wrap!($crate::load_builtin_entity_parser(ptr, parser_path))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_extend_gazetteer_entity_json(
+            ptr: *const $crate::CBuiltinEntityParser,
+            entity_name: *const libc::c_char,
+            entity_values_json: *const libc::c_char,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::extend_gazetteer_entity_json(
+                ptr,
+                entity_name,
+                entity_values_json
+            ))
         }
 
         #[no_mangle]

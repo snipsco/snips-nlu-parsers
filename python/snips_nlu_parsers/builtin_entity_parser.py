@@ -1,5 +1,5 @@
 import json
-from _ctypes import byref, pointer
+from _ctypes import byref
 from builtins import bytes, str
 from ctypes import c_char_p, c_int, c_void_p, string_at
 from pathlib import Path
@@ -14,7 +14,7 @@ class BuiltinEntityParser(object):
 
     @classmethod
     def build(cls, language, gazetteer_entity_parser_path=None):
-        """Build a `BuiltinEntityParser`
+        """Builds a `BuiltinEntityParser`
 
         Args:
             language (str): Language identifier
@@ -30,7 +30,7 @@ class BuiltinEntityParser(object):
         parser_config = dict(
             language=language.upper(),
             gazetteer_parser_path=gazetteer_entity_parser_path)
-        parser = pointer(c_void_p())
+        parser = c_void_p()
         json_parser_config = bytes(json.dumps(parser_config), encoding="utf8")
         exit_code = lib.snips_nlu_parsers_create_builtin_entity_parser(
             byref(parser), json_parser_config)
@@ -39,7 +39,7 @@ class BuiltinEntityParser(object):
         return cls(parser)
 
     def parse(self, text, scope=None):
-        """Extract builtin entities from *text*
+        """Extracts builtin entities from *text*
 
         Args:
             text (str): Input
@@ -72,8 +72,32 @@ class BuiltinEntityParser(object):
             result = string_at(ptr)
             return json.loads(result.decode("utf8"))
 
+    def extend_gazetteer_entity(self, entity_name, entity_values):
+        """Extends a builtin gazetteer entity with custom values
+
+        Args:
+            entity_name (str): Gazetteer entity identifier
+            entity_values (list of dict): List of entity values represented as
+                dictionaries with a 'raw_value' key and a 'resolved_value' key
+
+        Returns:
+            The same object, updated.
+
+        Raises:
+            ValueError: when the entity name is unknown or not present in the
+                parser
+        """
+        if not entity_values:
+            return self
+        entity_values_json = bytes(json.dumps(entity_values), encoding="utf8")
+        exit_code = lib.snips_nlu_parsers_extend_gazetteer_entity_json(
+            self._parser, entity_name.encode("utf8"), entity_values_json)
+        check_ffi_error(exit_code, "Something went wrong when extending the "
+                                   "builtin entity '%s'" % entity_name)
+        return self
+
     def persist(self, path):
-        """Persist the builtin entity parser on disk at the provided path"""
+        """Persists the builtin entity parser on disk at the provided path"""
         if isinstance(path, Path):
             path = str(path)
         exit_code = lib.snips_nlu_parsers_persist_builtin_entity_parser(
@@ -83,7 +107,7 @@ class BuiltinEntityParser(object):
 
     @classmethod
     def from_path(cls, parser_path):
-        """Create a :class:`BuiltinEntityParser` from a builtin entity parser
+        """Creates a :class:`BuiltinEntityParser` from a builtin entity parser
         persisted on disk
         """
         if isinstance(parser_path, Path):
@@ -97,5 +121,5 @@ class BuiltinEntityParser(object):
         return cls(parser)
 
     def __del__(self):
-        if lib is not None and hasattr(self, '_parser'):
+        if lib is not None and self._parser is not None:
             lib.snips_nlu_parsers_destroy_builtin_entity_parser(self._parser)

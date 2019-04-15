@@ -4,16 +4,19 @@ use std::fs::File;
 use std::ops::Range;
 use std::path::Path;
 
-use crate::conversion::gazetteer_entities::convert_to_slot_value;
-use crate::errors::*;
-use failure::ResultExt;
-use gazetteer_entity_parser::{Parser as EntityParser, ParserBuilder as EntityParserBuilder};
+use failure::{format_err, ResultExt};
+pub use gazetteer_entity_parser::{
+    EntityValue, Parser as EntityParser, ParserBuilder as EntityParserBuilder,
+};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use snips_nlu_ontology::{BuiltinEntity, BuiltinGazetteerEntityKind, IntoBuiltinEntityKind};
 use snips_nlu_utils::string::substring_with_char_range;
+
+use crate::conversion::gazetteer_entities::convert_to_slot_value;
+use crate::errors::*;
 
 pub trait EntityIdentifier:
     Clone + Debug + PartialEq + Serialize + DeserializeOwned + Sized
@@ -48,6 +51,25 @@ where
     T: EntityIdentifier,
 {
     entity_parsers: Vec<GazetteerEntityParser<T>>,
+}
+
+impl GazetteerParser<BuiltinGazetteerEntityKind> {
+    pub fn extend_gazetteer_entity(
+        &mut self,
+        entity_kind: BuiltinGazetteerEntityKind,
+        entity_values: Vec<EntityValue>,
+    ) -> Result<()> {
+        self.entity_parsers
+            .iter_mut()
+            .find(|entity_parser| entity_parser.entity_identifier == entity_kind)
+            .map(|entity_parser| entity_parser.parser.prepend_values(entity_values))
+            .ok_or_else(|| {
+                format_err!(
+                    "Cannot find gazetteer parser for entity '{:?}'",
+                    entity_kind
+                )
+            })
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -260,14 +282,16 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::*;
-    use crate::test_utils::test_path;
     use gazetteer_entity_parser::EntityValue;
     use gazetteer_entity_parser::ParserBuilder;
     use snips_nlu_ontology::{
         BuiltinEntityKind, BuiltinGazetteerEntityKind, SlotValue, StringValue,
     };
     use tempfile::tempdir;
+
+    use crate::test_utils::test_path;
+
+    use super::*;
 
     fn get_test_custom_gazetteer_parser() -> GazetteerParser<String> {
         let artist_entity_parser_builder = get_test_music_artist_parser_builder();

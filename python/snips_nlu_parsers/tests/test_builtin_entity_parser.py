@@ -94,6 +94,69 @@ class TestBuiltinEntityParser(unittest.TestCase):
             parser = BuiltinEntityParser.build(language)
             parser.parse(text)
 
+    def test_should_parse_with_extended_gazetteer_entity(self):
+        # Given
+        gazetteer_parser_path = ROOT_DIR / "data" / "tests" / \
+                                "builtin_gazetteer_parser"
+        parser = BuiltinEntityParser.build("en", gazetteer_parser_path)
+        entity_values = [
+            {
+                "raw_value": "my first custom artist",
+                "resolved_value": "my first resolved custom artist"
+            },
+            {
+                "raw_value": "my second custom artist",
+                "resolved_value": "my second resolved custom artist"
+            },
+        ]
+        parser.extend_gazetteer_entity("snips/musicArtist", entity_values)
+
+        # When
+        res = parser.parse(
+            "I want to listen to my first custom artist please and then the "
+            "rolling stones", scope=["snips/musicArtist"])
+
+        # Then
+        expected_result = [
+            {
+                "entity": {
+                    "kind": "MusicArtist",
+                    "value": "my first resolved custom artist"
+                },
+                "entity_kind": "snips/musicArtist",
+                "range": {"end": 42, "start": 20},
+                "value": "my first custom artist"
+            },
+            {
+                "entity": {
+                    "kind": "MusicArtist",
+                    "value": "The Rolling Stones"
+                },
+                "entity_kind": "snips/musicArtist",
+                "range": {"end": 77, "start": 59},
+                "value": "the rolling stones"
+            }
+        ]
+
+        self.assertListEqual(expected_result, res)
+
+    def test_should_fail_to_extend_non_extensible_parser(self):
+        # Given
+        parser = BuiltinEntityParser.build("en")
+
+        # When / Then
+        with self.assertRaises(ValueError) as cm:
+            entity_values = [
+                {
+                    "raw_value": "my first custom artist",
+                    "resolved_value": "my first resolved custom artist"
+                }
+            ]
+            parser.extend_gazetteer_entity("snips/musicArtist", entity_values)
+
+        self.assertTrue("No gazetteer parser found for entity 'MusicArtist'"
+                        in str(cm.exception))
+
     def test_should_persist_parser(self):
         # Given
         parser = BuiltinEntityParser.build("en")
