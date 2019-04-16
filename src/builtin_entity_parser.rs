@@ -196,7 +196,7 @@ impl BuiltinEntityParser {
     pub fn extend_gazetteer_entity(
         &mut self,
         entity_kind: BuiltinGazetteerEntityKind,
-        entity_values: Vec<EntityValue>,
+        entity_values: impl Iterator<Item=EntityValue>,
     ) -> Result<()> {
         self.gazetteer_parser
             .as_mut()
@@ -264,8 +264,8 @@ impl BuiltinEntityParser {
 
 #[cfg(test)]
 mod test {
-    use snips_nlu_ontology::language::Language;
     use snips_nlu_ontology::IntoBuiltinEntityKind;
+    use snips_nlu_ontology::language::Language;
     use snips_nlu_ontology::SlotValue::InstantTime;
     use tempfile::tempdir;
 
@@ -373,7 +373,7 @@ mod test {
                 vec![EntityValue {
                     raw_value: "my extended artist".to_string(),
                     resolved_value: "My resolved extended artist".to_string(),
-                }],
+                }].into_iter(),
             )
             .unwrap();
 
@@ -406,7 +406,7 @@ mod test {
             vec![EntityValue {
                 raw_value: "my extended artist".to_string(),
                 resolved_value: "My resolved extended artist".to_string(),
-            }],
+            }].into_iter(),
         );
 
         // Then

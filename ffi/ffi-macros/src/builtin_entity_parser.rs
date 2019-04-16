@@ -58,7 +58,7 @@ pub fn extend_gazetteer_entity_json(
     let entity_values_json_str = unsafe { CStr::from_ptr(entity_values_json) }.to_str()?;
     let entity_values: Vec<EntityValue> = serde_json::from_str(entity_values_json_str)?;
 
-    parser.extend_gazetteer_entity(entity_kind, entity_values)?;
+    parser.extend_gazetteer_entity(entity_kind, entity_values.into_iter())?;
     Ok(())
 }
 

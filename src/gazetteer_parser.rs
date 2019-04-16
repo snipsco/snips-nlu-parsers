@@ -57,12 +57,12 @@ impl GazetteerParser<BuiltinGazetteerEntityKind> {
     pub fn extend_gazetteer_entity(
         &mut self,
         entity_kind: BuiltinGazetteerEntityKind,
-        entity_values: Vec<EntityValue>,
+        entity_values: impl Iterator<Item=EntityValue>,
     ) -> Result<()> {
         self.entity_parsers
             .iter_mut()
             .find(|entity_parser| entity_parser.entity_identifier == entity_kind)
-            .map(|entity_parser| entity_parser.parser.prepend_values(entity_values))
+            .map(|entity_parser| entity_parser.parser.prepend_values(entity_values.collect()))
             .ok_or_else(|| {
                 format_err!(
                     "Cannot find gazetteer parser for entity '{:?}'",
