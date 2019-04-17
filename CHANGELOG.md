@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- Gazetteer entity extension API [#18](https://github.com/snipsco/snips-nlu-parsers/pull/18))
+
 ## [0.2.1] - 2019-04-08
 ### Added
 - Expose complete and by language builtin entities json configuration retrieval API [#13](https://github.com/snipsco/snips-nlu-parsers/pull/13)

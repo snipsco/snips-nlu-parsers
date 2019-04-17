@@ -2,14 +2,15 @@ use std::ffi::CStr;
 use std::slice;
 
 use failure::ResultExt;
+use ffi_utils::{convert_to_c_string, CReprOf, CStringArray, RawPointerConverter};
 use libc;
 use serde_json;
+use snips_nlu_ontology::{BuiltinEntity, BuiltinEntityKind, BuiltinGazetteerEntityKind};
+use snips_nlu_ontology_ffi_macros::{CBuiltinEntity, CBuiltinEntityArray};
+
+use snips_nlu_parsers::{BuiltinEntityParser, BuiltinEntityParserLoader, EntityValue};
 
 use crate::Result;
-use ffi_utils::{convert_to_c_string, CReprOf, CStringArray, RawPointerConverter};
-use snips_nlu_ontology::{BuiltinEntity, BuiltinEntityKind};
-use snips_nlu_ontology_ffi_macros::{CBuiltinEntity, CBuiltinEntityArray};
-use snips_nlu_parsers::{BuiltinEntityParser, BuiltinEntityParserLoader};
 
 #[repr(C)]
 pub struct CBuiltinEntityParser(*const libc::c_void);
@@ -19,6 +20,14 @@ macro_rules! get_parser {
         let container: &$crate::CBuiltinEntityParser = unsafe { &*$opaque };
         let x = container.0 as *const BuiltinEntityParser;
         unsafe { &*x }
+    }};
+}
+
+macro_rules! get_parser_mut {
+    ($opaque:ident) => {{
+        let container: &$crate::CBuiltinEntityParser = unsafe { &*$opaque };
+        let x = container.0 as *mut BuiltinEntityParser;
+        unsafe { &mut *x }
     }};
 }
 
@@ -35,6 +44,21 @@ pub fn create_builtin_entity_parser(
     unsafe {
         *ptr = c_parser;
     }
+    Ok(())
+}
+
+pub fn extend_gazetteer_entity_json(
+    ptr: *const CBuiltinEntityParser,
+    entity_name: *const libc::c_char,
+    entity_values_json: *const libc::c_char,
+) -> Result<()> {
+    let parser = get_parser_mut!(ptr);
+    let entity_identifier = unsafe { CStr::from_ptr(entity_name) }.to_str()?;
+    let entity_kind = BuiltinGazetteerEntityKind::from_identifier(entity_identifier)?;
+    let entity_values_json_str = unsafe { CStr::from_ptr(entity_values_json) }.to_str()?;
+    let entity_values: Vec<EntityValue> = serde_json::from_str(entity_values_json_str)?;
+
+    parser.extend_gazetteer_entity(entity_kind, entity_values.into_iter())?;
     Ok(())
 }
 
