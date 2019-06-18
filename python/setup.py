@@ -28,8 +28,8 @@ with io.open(README, "rt", encoding="utf8") as f:
     readme = f.read()
 
 required = [
-    "future==0.16.0",
-    "pathlib==1.0.1; python_version < '3.4'",
+    "future>=0.16,<0.18",
+    "pathlib>=1.0,<2.0; python_version < '3.4'",
 ]
 
 rust_extension = RustExtension(
