@@ -1,11 +1,11 @@
 import json
-from _ctypes import byref, pointer
+from _ctypes import byref
 from builtins import bytes, str
 from ctypes import c_char_p, c_int, c_void_p, string_at
 from pathlib import Path
 
 from snips_nlu_parsers.utils import (CStringArray, check_ffi_error, lib,
-                                    string_pointer)
+                                     string_pointer)
 
 
 class GazetteerEntityParser(object):
@@ -55,7 +55,7 @@ class GazetteerEntityParser(object):
                 ]
             }
         """
-        parser = pointer(c_void_p())
+        parser = c_void_p()
         json_parser_config = bytes(json.dumps(build_config), encoding="utf8")
         exit_code = lib.snips_nlu_parsers_build_gazetteer_entity_parser(
             byref(parser), json_parser_config)
@@ -113,7 +113,7 @@ class GazetteerEntityParser(object):
         """
         if isinstance(parser_path, Path):
             parser_path = str(parser_path)
-        parser = pointer(c_void_p())
+        parser = c_void_p()
         parser_path = bytes(parser_path, encoding="utf8")
         exit_code = lib.snips_nlu_parsers_load_gazetteer_entity_parser(
             byref(parser), parser_path)

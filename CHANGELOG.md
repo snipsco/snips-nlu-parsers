@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2019-06-18
+### Added
+- Gazetteer entity extension API [#18](https://github.com/snipsco/snips-nlu-parsers/pull/18))
+
+### Changed
+- Bumped Rustling to `0.18.1` [#20](https://github.com/snipsco/snips-nlu-parsers/pull/20)
+- Extended Python dependencies version upper bound [#19](https://github.com/snipsco/snips-nlu-parsers/pull/19)
+
 ## [0.2.1] - 2019-04-08
 ### Added
 - Expose complete and by language builtin entities json configuration retrieval API [#13](https://github.com/snipsco/snips-nlu-parsers/pull/13)
@@ -23,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
+[0.2.2]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/snipsco/snips-nlu-parsers/compare/0.1.1...0.1.2
