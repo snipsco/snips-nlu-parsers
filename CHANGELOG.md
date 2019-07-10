@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2019-07-10
+### Changed
+- Bump `snips-nlu-ontology` to `0.64.8`
+
 ## [0.2.2] - 2019-06-18
 ### Added
 - Gazetteer entity extension API [#18](https://github.com/snipsco/snips-nlu-parsers/pull/18))
@@ -31,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
+[0.2.3]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.1.2...0.2.0
