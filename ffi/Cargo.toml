@@ -8,8 +8,8 @@ edition = "2018"
 failure = "0.1"
 ffi-utils = { git = "https://github.com/snipsco/snips-utils-rs", rev = "291ce1d" }
 libc = "0.2"
-snips-nlu-ontology = { git = "https://github.com/snipsco/snips-nlu-ontology", branch = "master" }
-snips-nlu-ontology-ffi-macros = { git = "https://github.com/snipsco/snips-nlu-ontology", branch = "master" }
+snips-nlu-ontology = { git = "https://github.com/snipsco/snips-nlu-ontology", tag = "0.65.0" }
+snips-nlu-ontology-ffi-macros = { git = "https://github.com/snipsco/snips-nlu-ontology", tag = "0.65.0" }
 snips-nlu-parsers-ffi-macros = { path = "ffi-macros" }
 
 [lib]
