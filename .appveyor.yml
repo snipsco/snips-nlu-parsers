@@ -39,13 +39,14 @@ install:
 build: false
 
 test_script:
-  - cargo build --verbose
-  - cargo test --all --verbose
-  - cd python
-  - "%PYTHON%\\python.exe -m pip install -e . --verbose --install-option=\"--verbose\""
-  - "%PYTHON%\\python.exe -m unittest discover"
+  - IF NOT "%APPVEYOR_REPO_TAG%" == "true" cargo build --verbose
+  - IF NOT "%APPVEYOR_REPO_TAG%" == "true" cargo test --all --verbose
+  - IF NOT "%APPVEYOR_REPO_TAG%" == "true" cd python
+  - IF NOT "%APPVEYOR_REPO_TAG%" == "true" "%PYTHON%\\python.exe -m pip install -e . --verbose --install-option=\"--verbose\""
+  - IF NOT "%APPVEYOR_REPO_TAG%" == "true" "%PYTHON%\\python.exe -m unittest discover"
 
 after_test:
+  - IF NOT "%APPVEYOR_REPO_TAG%" == "true" appveyor exit
   - ECHO "BUILDING WHEELS..."
   - "%PYTHON%\\python.exe setup.py bdist_wheel"
 
