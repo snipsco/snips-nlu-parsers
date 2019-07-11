@@ -2,17 +2,31 @@ environment:
   matrix:
   - PYTHON: "C:\\Python27-x64"
     TARGET: x86_64-pc-windows-msvc
+    TAG_SCENARIO: true
   - PYTHON: "C:\\Python36-x64"
     TARGET: x86_64-pc-windows-msvc
+    TAG_SCENARIO: false
+  - PYTHON: "C:\\Python36-x64"
+    TARGET: x86_64-pc-windows-msvc
+    TAG_SCENARIO: true
   - PYTHON: "C:\\Python37-x64"
     TARGET: x86_64-pc-windows-msvc
+    TAG_SCENARIO: true
+  - PYTHON: "C:\\Python27"
+    TARGET: i686-pc-windows-msvc
+    TAG_SCENARIO: true
+  - PYTHON: "C:\\Python36"
+    TARGET: i686-pc-windows-msvc
+    TAG_SCENARIO: true
+  - PYTHON: "C:\\Python37"
+    TARGET: i686-pc-windows-msvc
+    TAG_SCENARIO: true
 
 branches:
   only:
   - master
 
 install:
-  - if NOT "%APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH:~0,8%" == "release/" if NOT "%APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH:~0,5%" == "main/" appveyor exit
   - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init.exe -y --default-host %TARGET%
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
@@ -39,22 +53,28 @@ artifacts:
   - path: python\dist\*
     name: pypiartifacts
 
-cache:
-- target
-- python\ffi\target
-- C:\Users\appveyor\.cargo\registry
+deploy:
+  tag: $(APPVEYOR_REPO_TAG_NAME)
+  provider: GitHub
+  auth_token:
+    secure: Q6QElmu6htnldLRgDcG2J/BkmG3lFMKeqnYsb/o1bCHphWeDk6vJT+e5FRM4wB4d
+  artifact: pypiartifacts
+  on:
+    APPVEYOR_REPO_TAG: true
 
 for:
 -
-  branches:
+  # non-tagged scenario
+  matrix:
     only:
-      - master
+      - TAG_SCENARIO: false
 
-  environment:
-    matrix:
-    - PYTHON: "C:\\Python27"
-      TARGET: i686-pc-windows-msvc
-    - PYTHON: "C:\\Python36"
-      TARGET: i686-pc-windows-msvc
-    - PYTHON: "C:\\Python37"
-      TARGET: i686-pc-windows-msvc
+  skip_tags: true
+
+-
+  # tagged scenario
+  matrix:
+    only:
+      - TAG_SCENARIO: true
+
+  skip_non_tags: true
