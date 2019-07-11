@@ -1,10 +1,10 @@
 Snips NLU Parsers
 =================
 
-.. image:: https://travis-ci.org/snipsco/snips-nlu-parsers.svg?branch=develop
+.. image:: https://travis-ci.org/snipsco/snips-nlu-parsers.svg?branch=master
    :target: https://travis-ci.org/snipsco/snips-nlu-parsers
 
-.. image:: https://ci.appveyor.com/api/projects/status/github/snipsco/snips-nlu-parsers?branch=develop&svg=true
+.. image:: https://ci.appveyor.com/api/projects/status/github/snipsco/snips-nlu-parsers?branch=master&svg=true
    :target: https://ci.appveyor.com/project/snipsco/snips-nlu-parsers
 
 This Rust crate provides APIs to extract entities in the context of a Natural Language Understanding (NLU)
