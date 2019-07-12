@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Changed
+- Bump `snips-nlu-ontology` to `0.65.0` [#26](https://github.com/snipsco/snips-nlu-parsers/pull/26)
+- Bump `rustling-ontology` to `0.19.0`  [#26](https://github.com/snipsco/snips-nlu-parsers/pull/26)
+
 ## [0.2.3] - 2019-07-10
 ### Changed
 - Bump `snips-nlu-ontology` to `0.64.8`
@@ -35,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
+[Unreleased]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.3...HEAD
 [0.2.3]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.0...0.2.1

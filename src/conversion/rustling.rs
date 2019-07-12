@@ -4,7 +4,8 @@ use rustling_ontology::Grain as RustlingGrain;
 use rustling_ontology::Lang as RustlingLanguage;
 use rustling_ontology::output::{
     AmountOfMoneyOutput, DurationOutput, FloatOutput, IntegerOutput, OrdinalOutput, Output,
-    OutputKind, PercentageOutput, TemperatureOutput, TimeIntervalOutput, TimeOutput,
+    OutputKind, PercentageOutput, TemperatureOutput,
+    DatetimeIntervalOutput, DatetimeOutput, DatetimeIntervalKind,
 };
 use rustling_ontology::ParserMatch;
 use snips_nlu_ontology::*;
@@ -44,8 +45,8 @@ impl OntologyFrom<PercentageOutput> for PercentageValue {
     }
 }
 
-impl OntologyFrom<TimeOutput> for InstantTimeValue {
-    fn ontology_from(rustling_output: TimeOutput) -> Self {
+impl OntologyFrom<DatetimeOutput> for InstantTimeValue {
+    fn ontology_from(rustling_output: DatetimeOutput) -> Self {
         Self {
             value: rustling_output.moment.to_string(),
             grain: Grain::ontology_from(rustling_output.grain),
@@ -54,18 +55,18 @@ impl OntologyFrom<TimeOutput> for InstantTimeValue {
     }
 }
 
-impl OntologyFrom<TimeIntervalOutput> for TimeIntervalValue {
-    fn ontology_from(rustling_output: TimeIntervalOutput) -> Self {
-        match rustling_output {
-            TimeIntervalOutput::After(after) => Self {
+impl OntologyFrom<DatetimeIntervalOutput> for TimeIntervalValue {
+    fn ontology_from(rustling_output: DatetimeIntervalOutput) -> Self {
+        match rustling_output.interval_kind {
+            DatetimeIntervalKind::After(after) => Self {
                 from: Some(after.moment.to_string()),
                 to: None,
             },
-            TimeIntervalOutput::Before(before) => Self {
+            DatetimeIntervalKind::Before(before) => Self {
                 from: None,
                 to: Some(before.moment.to_string()),
             },
-            TimeIntervalOutput::Between {
+            DatetimeIntervalKind::Between {
                 start,
                 end,
                 precision: _,
@@ -168,8 +169,8 @@ impl OntologyFrom<Output> for SlotValue {
             Output::Integer(v) => SlotValue::Number(v.ontology_into()),
             Output::Ordinal(v) => SlotValue::Ordinal(v.ontology_into()),
             Output::Temperature(v) => SlotValue::Temperature(v.ontology_into()),
-            Output::Time(v) => SlotValue::InstantTime(v.ontology_into()),
-            Output::TimeInterval(v) => SlotValue::TimeInterval(v.ontology_into()),
+            Output::Datetime(v) => SlotValue::InstantTime(v.ontology_into()),
+            Output::DatetimeInterval(v) => SlotValue::TimeInterval(v.ontology_into()),
         }
     }
 }
@@ -184,18 +185,8 @@ pub fn convert_to_builtin(input: &str, parser_match: ParserMatch<Output>) -> Bui
 }
 
 impl<'a> OntologyFrom<&'a Output> for BuiltinEntityKind {
-    fn ontology_from(v: &Output) -> Self {
-        match *v {
-            Output::AmountOfMoney(_) => BuiltinEntityKind::AmountOfMoney,
-            Output::Duration(_) => BuiltinEntityKind::Duration,
-            Output::Float(_) => BuiltinEntityKind::Number,
-            Output::Integer(_) => BuiltinEntityKind::Number,
-            Output::Ordinal(_) => BuiltinEntityKind::Ordinal,
-            Output::Temperature(_) => BuiltinEntityKind::Temperature,
-            Output::Time(_) => BuiltinEntityKind::Time,
-            Output::TimeInterval(_) => BuiltinEntityKind::Time,
-            Output::Percentage(_) => BuiltinEntityKind::Percentage,
-        }
+    fn ontology_from(output: &Output) -> Self {
+        BuiltinEntityKind::ontology_from(&output.kind())
     }
 }
 
@@ -207,7 +198,11 @@ impl<'a> OntologyFrom<&'a OutputKind> for BuiltinEntityKind {
             OutputKind::Number => BuiltinEntityKind::Number,
             OutputKind::Ordinal => BuiltinEntityKind::Ordinal,
             OutputKind::Temperature => BuiltinEntityKind::Temperature,
+            OutputKind::Datetime => BuiltinEntityKind::Datetime,
+            OutputKind::Date => BuiltinEntityKind::Date,
             OutputKind::Time => BuiltinEntityKind::Time,
+            OutputKind::DatePeriod => BuiltinEntityKind::DatePeriod,
+            OutputKind::TimePeriod => BuiltinEntityKind::TimePeriod,
             OutputKind::Percentage => BuiltinEntityKind::Percentage,
         }
     }
@@ -221,7 +216,11 @@ impl<'a> TryOntologyFrom<&'a BuiltinEntityKind> for OutputKind {
             BuiltinEntityKind::Number => Ok(OutputKind::Number),
             BuiltinEntityKind::Ordinal => Ok(OutputKind::Ordinal),
             BuiltinEntityKind::Temperature => Ok(OutputKind::Temperature),
+            BuiltinEntityKind::Datetime => Ok(OutputKind::Datetime),
+            BuiltinEntityKind::Date => Ok(OutputKind::Date),
             BuiltinEntityKind::Time => Ok(OutputKind::Time),
+            BuiltinEntityKind::DatePeriod => Ok(OutputKind::DatePeriod),
+            BuiltinEntityKind::TimePeriod => Ok(OutputKind::TimePeriod),
             BuiltinEntityKind::Percentage => Ok(OutputKind::Percentage),
             _ => Err(format_err!("Cannot convert {:?} into rustling type", v)),
         }

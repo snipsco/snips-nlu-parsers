@@ -14,5 +14,5 @@ pub fn convert_to_slot_value(
             }
         }
     };
-    return match_entity_kind_to_slot_value!(MusicAlbum, MusicArtist, MusicTrack);
+    return match_entity_kind_to_slot_value!(City, Country, MusicAlbum, MusicArtist, MusicTrack, Region);
 }
