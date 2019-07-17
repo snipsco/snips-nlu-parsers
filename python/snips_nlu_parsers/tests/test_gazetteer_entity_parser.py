@@ -53,7 +53,10 @@ class TestGazetteerEntityParser(unittest.TestCase):
                 ],
                 "threshold": 0.6,
                 "n_gazetteer_stop_words": None,
-                "additional_stop_words": None
+                "additional_stop_words": None,
+            },
+            "license_info": {
+                "filename": "LICENSE",
             }
         }
 
@@ -115,12 +118,26 @@ class TestGazetteerEntityParser(unittest.TestCase):
 
         # When
         with temp_dir() as tmpdir:
-            persisted_path = str(tmpdir / "persisted_gazetteer_parser")
-            parser.persist(persisted_path)
-            loaded_parser = GazetteerEntityParser.from_path(persisted_path)
-        res = loaded_parser.parse("I want to listen to the stones", None)
+            persisted_path = tmpdir / "persisted_gazetteer_parser"
+            parser.persist(str(persisted_path))
 
-        # Then
+            # Then
+            license_path = persisted_path / "parser_1" / "LICENSE"
+            if not license_path.exists():
+                self.fail("Couldn't find license file")
+
+            with license_path.open() as f:
+                content = f.read()
+
+            expected_content = """Some license content
+here
+"""
+            self.assertEqual(expected_content, content)
+
+            loaded_parser = GazetteerEntityParser.from_path(persisted_path)
+
+
+        res = loaded_parser.parse("I want to listen to the stones", None)
         expected_result = [
             {
                 "value": "the stones",

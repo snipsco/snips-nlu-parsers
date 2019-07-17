@@ -294,7 +294,11 @@ mod test {
     use super::*;
 
     fn get_test_custom_gazetteer_parser() -> GazetteerParser<String> {
-        let artist_entity_parser_builder = get_test_music_artist_parser_builder();
+        let artist_entity_parser_builder = get_test_music_artist_parser_builder()
+            .license_info(
+                "LICENSE".to_string(),
+                "Some license content\nhere\n".to_string(),
+            );
         let track_entity_parser_builder = get_test_music_track_parser_builder();
         let gazetteer_parser_builder = GazetteerParserBuilder {
             entity_parsers: vec![
@@ -451,6 +455,8 @@ mod test {
         let loaded_gazetteer_parser = GazetteerParser::from_path(&parser_dir).unwrap();
 
         // Then
+        let expected_license_path = parser_dir.join("parser_1").join("LICENSE");
+        assert!(expected_license_path.exists());
         assert_eq!(gazetteer_parser, loaded_gazetteer_parser);
     }
 
