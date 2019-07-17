@@ -57,6 +57,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
             },
             "license_info": {
                 "filename": "LICENSE",
+                "content": "Some license content\nhere\n"
             }
         }
 
