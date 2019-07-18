@@ -54,11 +54,11 @@ class TestGazetteerEntityParser(unittest.TestCase):
                 "threshold": 0.6,
                 "n_gazetteer_stop_words": None,
                 "additional_stop_words": None,
+                "license_info": {
+                    "filename": "LICENSE",
+                    "content": "Some license content\nhere\n"
+                }
             },
-            "license_info": {
-                "filename": "LICENSE",
-                "content": "Some license content\nhere\n"
-            }
         }
 
     def test_should_parse_from_built_parser(self):
@@ -115,7 +115,8 @@ class TestGazetteerEntityParser(unittest.TestCase):
 
     def test_should_persist_parser(self):
         # Given
-        parser = GazetteerEntityParser.from_path(CUSTOM_PARSER_PATH)
+        parser_config = self.get_test_parser_config()
+        parser = GazetteerEntityParser.build(parser_config)
 
         # When
         with temp_dir() as tmpdir:
