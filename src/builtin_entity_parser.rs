@@ -15,6 +15,7 @@ use snips_nlu_utils::string::{convert_to_byte_range, convert_to_char_index};
 use crate::conversion::*;
 use crate::errors::*;
 use crate::gazetteer_parser::GazetteerParser;
+use crate::parsable::ParsableLanguage;
 use crate::utils::{get_ranges_mapping, NON_SPACE_REGEX, NON_SPACE_SEPARATED_LANGUAGES};
 
 pub struct BuiltinEntityParser {
@@ -44,7 +45,7 @@ impl BuiltinEntityParserLoader {
     }
 
     pub fn load(&self) -> Result<BuiltinEntityParser> {
-        let supported_entity_kinds = BuiltinEntityKind::supported_entity_kinds(self.language);
+        let supported_entity_kinds = self.language.supported_entity_kinds();
         let ordered_entity_kinds = OutputKind::all()
             .iter()
             .map(|output_kind| output_kind.ontology_into())
@@ -107,6 +108,7 @@ impl BuiltinEntityParser {
                 .into_iter()
                 .map(|parser_match| rustling::convert_to_builtin(sentence, parser_match))
                 .sorted_by(|a, b| Ord::cmp(&a.range.start, &b.range.start))
+                .collect()
         };
 
         let mut gazetteer_entities = match &self.gazetteer_parser {
@@ -194,7 +196,7 @@ impl BuiltinEntityParser {
     pub fn extend_gazetteer_entity(
         &mut self,
         entity_kind: BuiltinGazetteerEntityKind,
-        entity_values: impl Iterator<Item=EntityValue>,
+        entity_values: impl Iterator<Item = EntityValue>,
     ) -> Result<()> {
         self.gazetteer_parser
             .as_mut()
@@ -262,11 +264,12 @@ impl BuiltinEntityParser {
 
 #[cfg(test)]
 mod test {
-    use snips_nlu_ontology::IntoBuiltinEntityKind;
     use snips_nlu_ontology::language::Language;
+    use snips_nlu_ontology::IntoBuiltinEntityKind;
     use snips_nlu_ontology::SlotValue::InstantTime;
     use tempfile::tempdir;
 
+    use crate::parsable::ParsableEntityKind;
     use crate::test_utils::test_path;
 
     use super::*;
@@ -287,7 +290,10 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Datetime],
             parser
-                .extract_entities("Book me a restaurant for tomorrow", Some(&[BuiltinEntityKind::Datetime]))
+                .extract_entities(
+                    "Book me a restaurant for tomorrow",
+                    Some(&[BuiltinEntityKind::Datetime])
+                )
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -307,7 +313,10 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Date],
             parser
-                .extract_entities("Book me a restaurant for tomorrow", Some(&[BuiltinEntityKind::Date]))
+                .extract_entities(
+                    "Book me a restaurant for tomorrow",
+                    Some(&[BuiltinEntityKind::Date])
+                )
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -327,11 +336,14 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Time, BuiltinEntityKind::Time],
             parser
-                .extract_entities("Book the meeting room from 10am to 11am", Some(&[BuiltinEntityKind::Time]))
-            .unwrap()
-            .iter()
-            .map(|e| e.entity_kind)
-            .collect_vec()
+                .extract_entities(
+                    "Book the meeting room from 10am to 11am",
+                    Some(&[BuiltinEntityKind::Time])
+                )
+                .unwrap()
+                .iter()
+                .map(|e| e.entity_kind)
+                .collect_vec()
         );
 
         assert_eq!(
@@ -421,7 +433,8 @@ mod test {
                 vec![EntityValue {
                     raw_value: "my extended artist".to_string(),
                     resolved_value: "My resolved extended artist".to_string(),
-                }].into_iter(),
+                }]
+                .into_iter(),
             )
             .unwrap();
 
@@ -454,7 +467,8 @@ mod test {
             vec![EntityValue {
                 raw_value: "my extended artist".to_string(),
                 resolved_value: "My resolved extended artist".to_string(),
-            }].into_iter(),
+            }]
+            .into_iter(),
         );
 
         // Then
@@ -477,10 +491,12 @@ mod test {
             entity: InstantTime(expected_datetime_value.clone()),
         };
 
-        let parsed_entities = parser.extract_entities(
-            " の カリフォル  二 千 十三 年二 月十 日  ニア州の天気予報は？",
-            None,
-        ).unwrap();
+        let parsed_entities = parser
+            .extract_entities(
+                " の カリフォル  二 千 十三 年二 月十 日  ニア州の天気予報は？",
+                None,
+            )
+            .unwrap();
         assert_eq!(1, parsed_entities.len());
         let parsed_entity = &parsed_entities[0];
         assert_eq!(expected_entity.value, parsed_entity.value);
@@ -496,10 +512,12 @@ mod test {
 
         assert_eq!(
             Vec::<BuiltinEntity>::new(),
-            parser.extract_entities(
-                "二 千 十三 年二 月十 日の カリフォルニア州の天気予報は？",
-                None,
-            ).unwrap()
+            parser
+                .extract_entities(
+                    "二 千 十三 年二 月十 日の カリフォルニア州の天気予報は？",
+                    None,
+                )
+                .unwrap()
         );
     }
 
@@ -508,7 +526,7 @@ mod test {
         for language in Language::all() {
             let parser = BuiltinEntityParserLoader::new(*language).load().unwrap();
             for entity_kind in GrammarEntityKind::all() {
-                for example in (*entity_kind).examples(*language) {
+                for example in entity_kind.examples(*language) {
                     let results = parser
                         .extract_entities(example, Some(&[entity_kind.into_builtin_kind()]))
                         .unwrap();
