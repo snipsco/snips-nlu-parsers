@@ -1,9 +1,5 @@
-use std::fmt::Debug;
-use std::fs;
-use std::fs::File;
-use std::ops::Range;
-use std::path::Path;
-
+use crate::conversion::gazetteer_entities::convert_to_slot_value;
+use crate::errors::*;
 use failure::{format_err, ResultExt};
 pub use gazetteer_entity_parser::{
     EntityValue, Parser as EntityParser, ParserBuilder as EntityParserBuilder,
@@ -14,9 +10,11 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use snips_nlu_ontology::{BuiltinEntity, BuiltinGazetteerEntityKind, IntoBuiltinEntityKind};
 use snips_nlu_utils::string::substring_with_char_range;
-
-use crate::conversion::gazetteer_entities::convert_to_slot_value;
-use crate::errors::*;
+use std::fmt::Debug;
+use std::fs;
+use std::fs::File;
+use std::ops::Range;
+use std::path::Path;
 
 pub trait EntityIdentifier:
     Clone + Debug + PartialEq + Serialize + DeserializeOwned + Sized
@@ -57,7 +55,7 @@ impl GazetteerParser<BuiltinGazetteerEntityKind> {
     pub fn extend_gazetteer_entity(
         &mut self,
         entity_kind: BuiltinGazetteerEntityKind,
-        entity_values: impl Iterator<Item=EntityValue>,
+        entity_values: impl Iterator<Item = EntityValue>,
     ) -> Result<()> {
         self.entity_parsers
             .iter_mut()

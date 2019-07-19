@@ -1,16 +1,13 @@
-use std::ffi::CStr;
-use std::slice;
-
+use crate::Result;
 use failure::ResultExt;
 use ffi_utils::{convert_to_c_string, CReprOf, CStringArray, RawPointerConverter};
 use libc;
 use serde_json;
 use snips_nlu_ontology::{BuiltinEntity, BuiltinEntityKind, BuiltinGazetteerEntityKind};
 use snips_nlu_ontology_ffi_macros::{CBuiltinEntity, CBuiltinEntityArray};
-
 use snips_nlu_parsers::{BuiltinEntityParser, BuiltinEntityParserLoader, EntityValue};
-
-use crate::Result;
+use std::ffi::CStr;
+use std::slice;
 
 #[repr(C)]
 pub struct CBuiltinEntityParser(*const libc::c_void);
