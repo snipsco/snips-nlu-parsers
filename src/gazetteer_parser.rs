@@ -282,8 +282,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use gazetteer_entity_parser::EntityValue;
-    use gazetteer_entity_parser::ParserBuilder;
+    use gazetteer_entity_parser::{EntityValue, LicenseInfo, ParserBuilder};
     use snips_nlu_ontology::{
         BuiltinEntityKind, BuiltinGazetteerEntityKind, SlotValue, StringValue,
     };
@@ -294,11 +293,11 @@ mod test {
     use super::*;
 
     fn get_test_custom_gazetteer_parser() -> GazetteerParser<String> {
-        let artist_entity_parser_builder = get_test_music_artist_parser_builder()
-            .license_info(
-                "LICENSE".to_string(),
-                "Some license content\nhere\n".to_string(),
-            );
+        let artist_entity_parser_builder =
+            get_test_music_artist_parser_builder().license_info(LicenseInfo {
+                filename: "LICENSE".to_string(),
+                content: "Some license content\nhere\n".to_string(),
+            });
         let track_entity_parser_builder = get_test_music_track_parser_builder();
         let gazetteer_parser_builder = GazetteerParserBuilder {
             entity_parsers: vec![

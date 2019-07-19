@@ -125,21 +125,18 @@ class TestGazetteerEntityParser(unittest.TestCase):
 
             # Then
             license_path = persisted_path / "parser_1" / "LICENSE"
-            if not license_path.exists():
-                self.fail("Couldn't find license file")
+            self.assertTrue(license_path.exists(),
+                            "Couldn't find license file")
 
-            with license_path.open() as f:
-                content = f.read()
-
-            expected_content = """Some license content
-here
-"""
-            self.assertEqual(expected_content, content)
+            with license_path.open(encoding="utf8") as f:
+                license_content = f.read()
 
             loaded_parser = GazetteerEntityParser.from_path(persisted_path)
 
-
         res = loaded_parser.parse("I want to listen to the stones", None)
+
+        # Then
+        expected_license_content = "Some license content\nhere"
         expected_result = [
             {
                 "value": "the stones",
@@ -148,6 +145,7 @@ here
                 "entity_identifier": "music_artist"
             }
         ]
+        self.assertEqual(expected_license_content, license_content)
         self.assertListEqual(expected_result, res)
 
     def test_should_load_parser_from_path(self):
