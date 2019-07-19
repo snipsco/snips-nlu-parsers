@@ -136,7 +136,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
         res = loaded_parser.parse("I want to listen to the stones", None)
 
         # Then
-        expected_license_content = "Some license content\nhere"
+        expected_license_content = "Some license content\nhere\n"
         expected_result = [
             {
                 "value": "the stones",
