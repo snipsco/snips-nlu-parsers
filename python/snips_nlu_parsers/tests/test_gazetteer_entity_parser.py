@@ -53,8 +53,12 @@ class TestGazetteerEntityParser(unittest.TestCase):
                 ],
                 "threshold": 0.6,
                 "n_gazetteer_stop_words": None,
-                "additional_stop_words": None
-            }
+                "additional_stop_words": None,
+                "license_info": {
+                    "filename": "LICENSE",
+                    "content": "Some license content\nhere\n"
+                }
+            },
         }
 
     def test_should_parse_from_built_parser(self):
@@ -111,16 +115,28 @@ class TestGazetteerEntityParser(unittest.TestCase):
 
     def test_should_persist_parser(self):
         # Given
-        parser = GazetteerEntityParser.from_path(CUSTOM_PARSER_PATH)
+        parser_config = self.get_test_parser_config()
+        parser = GazetteerEntityParser.build(parser_config)
 
         # When
         with temp_dir() as tmpdir:
-            persisted_path = str(tmpdir / "persisted_gazetteer_parser")
-            parser.persist(persisted_path)
+            persisted_path = tmpdir / "persisted_gazetteer_parser"
+            parser.persist(str(persisted_path))
+
+            # Then
+            license_path = persisted_path / "parser_1" / "LICENSE"
+            self.assertTrue(license_path.exists(),
+                            "Couldn't find license file")
+
+            with license_path.open(encoding="utf8") as f:
+                license_content = f.read()
+
             loaded_parser = GazetteerEntityParser.from_path(persisted_path)
+
         res = loaded_parser.parse("I want to listen to the stones", None)
 
         # Then
+        expected_license_content = "Some license content\nhere\n"
         expected_result = [
             {
                 "value": "the stones",
@@ -129,6 +145,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
                 "entity_identifier": "music_artist"
             }
         ]
+        self.assertEqual(expected_license_content, license_content)
         self.assertListEqual(expected_result, res)
 
     def test_should_load_parser_from_path(self):

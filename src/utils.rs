@@ -1,10 +1,9 @@
-use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
-use std::ops::Range;
-
 use lazy_static::lazy_static;
 use regex::Regex;
 use snips_nlu_ontology::Language;
+use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
+use std::ops::Range;
 
 lazy_static! {
     pub static ref NON_SPACE_REGEX: Regex = Regex::new(r"[^\s]+").unwrap();
