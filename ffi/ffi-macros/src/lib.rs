@@ -1,8 +1,10 @@
 pub use builtin_entity_parser::*;
 pub use gazetteer_entity_parser::*;
+pub use ontology::*;
 
 mod builtin_entity_parser;
 mod gazetteer_entity_parser;
+mod ontology;
 
 type Result<T> = ::std::result::Result<T, ::failure::Error>;
 
@@ -136,6 +138,60 @@ macro_rules! export_nlu_parsers_c_symbols {
             ptr: *mut $crate::CGazetteerEntityParser,
         ) -> ::ffi_utils::SNIPS_RESULT {
             wrap!($crate::destroy_gazetteer_entity_parser(ptr))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_supported_builtin_entities(
+            language: *const libc::c_char,
+            results: *mut *const ::ffi_utils::CStringArray,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::get_supported_builtin_entities(language, results))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_supported_grammar_entities(
+            language: *const libc::c_char,
+            results: *mut *const ::ffi_utils::CStringArray,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::get_supported_grammar_entities(language, results))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_supported_builtin_gazetteer_entities(
+            language: *const libc::c_char,
+            results: *mut *const ::ffi_utils::CStringArray,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::get_supported_builtin_gazetteer_entities(
+                language, results
+            ))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_builtin_entity_examples(
+            builtin_entity_kind: *const libc::c_char,
+            language: *const libc::c_char,
+            results: *mut *const ::ffi_utils::CStringArray,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::get_builtin_entity_examples(
+                builtin_entity_kind,
+                language,
+                results
+            ))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_complete_entity_ontology_json(
+            result: *mut *const libc::c_char,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::get_complete_entity_ontology_json(result))
+        }
+
+        #[no_mangle]
+        pub extern "C" fn snips_nlu_parsers_language_entity_ontology_json(
+            language: *const libc::c_char,
+            result: *mut *const libc::c_char,
+        ) -> ::ffi_utils::SNIPS_RESULT {
+            wrap!($crate::get_language_entity_ontology_json(language, result))
         }
     };
 }

@@ -1,6 +1,7 @@
 use crate::conversion::*;
 use crate::errors::*;
 use crate::gazetteer_parser::GazetteerParser;
+use crate::parsable::ParsableLanguage;
 use crate::utils::{get_ranges_mapping, NON_SPACE_REGEX, NON_SPACE_SEPARATED_LANGUAGES};
 use failure::{format_err, ResultExt};
 pub use gazetteer_entity_parser::EntityValue;
@@ -42,7 +43,7 @@ impl BuiltinEntityParserLoader {
     }
 
     pub fn load(&self) -> Result<BuiltinEntityParser> {
-        let supported_entity_kinds = BuiltinEntityKind::supported_entity_kinds(self.language);
+        let supported_entity_kinds = self.language.supported_entity_kinds();
         let ordered_entity_kinds = OutputKind::all()
             .iter()
             .map(|output_kind| output_kind.ontology_into())
@@ -105,6 +106,7 @@ impl BuiltinEntityParser {
                 .into_iter()
                 .map(|parser_match| rustling::convert_to_builtin(sentence, parser_match))
                 .sorted_by(|a, b| Ord::cmp(&a.range.start, &b.range.start))
+                .collect()
         };
 
         let mut gazetteer_entities = match &self.gazetteer_parser {
@@ -265,6 +267,7 @@ mod test {
     use snips_nlu_ontology::SlotValue::InstantTime;
     use tempfile::tempdir;
 
+    use crate::parsable::ParsableEntityKind;
     use crate::test_utils::test_path;
 
     use super::*;
@@ -521,7 +524,7 @@ mod test {
         for language in Language::all() {
             let parser = BuiltinEntityParserLoader::new(*language).load().unwrap();
             for entity_kind in GrammarEntityKind::all() {
-                for example in (*entity_kind).examples(*language) {
+                for example in entity_kind.examples(*language) {
                     let results = parser
                         .extract_entities(example, Some(&[entity_kind.into_builtin_kind()]))
                         .unwrap();

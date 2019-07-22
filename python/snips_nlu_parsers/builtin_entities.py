@@ -19,18 +19,8 @@ _ALL_BUILTIN_ENTITIES = None
 _ALL_GAZETTEER_ENTITIES = None
 _ALL_GRAMMAR_ENTITIES = None
 _BUILTIN_ENTITIES_SHORTNAMES = dict()
-_ONTOLOGY_VERSION = None
 _COMPLETE_ENTITY_ONTOLOGY = None
 _LANGUAGE_ENTITY_ONTOLOGY = dict()
-
-
-def get_ontology_version():
-    """Get the version of the ontology"""
-    global _ONTOLOGY_VERSION
-    if _ONTOLOGY_VERSION is None:
-        lib.snips_nlu_ontology_version.restype = c_char_p
-        _ONTOLOGY_VERSION = lib.snips_nlu_ontology_version().decode("utf8")
-    return _ONTOLOGY_VERSION
 
 
 def get_all_languages():
@@ -114,7 +104,7 @@ def get_supported_entities(language):
 
     if language not in _SUPPORTED_ENTITIES:
         with string_array_pointer(pointer(CStringArray())) as ptr:
-            exit_code = lib.snips_nlu_ontology_supported_builtin_entities(
+            exit_code = lib.snips_nlu_parsers_supported_builtin_entities(
                 language.encode("utf8"), byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when retrieving "
                                        "supported entities")
@@ -139,7 +129,7 @@ def get_supported_gazetteer_entities(language):
     if language not in _SUPPORTED_GAZETTEER_ENTITIES:
         with string_array_pointer(pointer(CStringArray())) as ptr:
             exit_code = \
-                lib.snips_nlu_ontology_supported_builtin_gazetteer_entities(
+                lib.snips_nlu_parsers_supported_builtin_gazetteer_entities(
                     language.encode("utf8"), byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when retrieving "
                                        "supported gazetteer entities")
@@ -163,7 +153,7 @@ def get_supported_grammar_entities(language):
 
     if language not in _SUPPORTED_GRAMMAR_ENTITIES:
         with string_array_pointer(pointer(CStringArray())) as ptr:
-            exit_code = lib.snips_nlu_ontology_supported_grammar_entities(
+            exit_code = lib.snips_nlu_parsers_supported_grammar_entities(
                 language.encode("utf8"), byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when retrieving "
                                        "supported grammar entities")
@@ -190,7 +180,7 @@ def get_builtin_entity_examples(builtin_entity_kind, language):
 
     if language not in _ENTITIES_EXAMPLES[builtin_entity_kind]:
         with string_array_pointer(pointer(CStringArray())) as ptr:
-            exit_code = lib.snips_nlu_ontology_builtin_entity_examples(
+            exit_code = lib.snips_nlu_parsers_builtin_entity_examples(
                 builtin_entity_kind.encode("utf8"),
                 language.encode("utf8"), byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when retrieving "
@@ -207,7 +197,7 @@ def get_complete_entity_ontology():
     global _COMPLETE_ENTITY_ONTOLOGY
     if _COMPLETE_ENTITY_ONTOLOGY is None:
         with string_pointer(c_char_p()) as ptr:
-            exit_code = lib.snips_nlu_ontology_complete_entity_ontology_json(byref(ptr))
+            exit_code = lib.snips_nlu_parsers_complete_entity_ontology_json(byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when retrieving "
                                        "complete entity ontology")
             json_str = string_at(ptr).decode("utf8")
@@ -221,7 +211,7 @@ def get_language_entity_ontology(language):
     global _LANGUAGE_ENTITY_ONTOLOGY
     if language not in _LANGUAGE_ENTITY_ONTOLOGY:
         with string_pointer(c_char_p()) as ptr:
-            exit_code = lib.snips_nlu_ontology_language_entity_ontology_json(
+            exit_code = lib.snips_nlu_parsers_language_entity_ontology_json(
                 language.encode("utf8"), byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when retrieving "
                                        "language entity ontology")
