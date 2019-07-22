@@ -1,8 +1,8 @@
-use std::fs;
-use std::ops::Range;
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-
+use crate::conversion::*;
+use crate::errors::*;
+use crate::gazetteer_parser::GazetteerParser;
+use crate::parsable::ParsableLanguage;
+use crate::utils::{get_ranges_mapping, NON_SPACE_REGEX, NON_SPACE_SEPARATED_LANGUAGES};
 use failure::{format_err, ResultExt};
 pub use gazetteer_entity_parser::EntityValue;
 use itertools::Itertools;
@@ -11,12 +11,10 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use snips_nlu_ontology::*;
 use snips_nlu_utils::string::{convert_to_byte_range, convert_to_char_index};
-
-use crate::conversion::*;
-use crate::errors::*;
-use crate::gazetteer_parser::GazetteerParser;
-use crate::parsable::ParsableLanguage;
-use crate::utils::{get_ranges_mapping, NON_SPACE_REGEX, NON_SPACE_SEPARATED_LANGUAGES};
+use std::fs;
+use std::ops::Range;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 pub struct BuiltinEntityParser {
     gazetteer_parser: Option<GazetteerParser<BuiltinGazetteerEntityKind>>,

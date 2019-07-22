@@ -1,17 +1,16 @@
-use failure::format_err;
-use rustling_ontology::dimension::Precision as RustlingPrecision;
-use rustling_ontology::Grain as RustlingGrain;
-use rustling_ontology::Lang as RustlingLanguage;
-use rustling_ontology::output::{
-    AmountOfMoneyOutput, DurationOutput, FloatOutput, IntegerOutput, OrdinalOutput, Output,
-    OutputKind, PercentageOutput, TemperatureOutput,
-    DatetimeIntervalOutput, DatetimeOutput, DatetimeIntervalKind,
-};
-use rustling_ontology::ParserMatch;
-use snips_nlu_ontology::*;
-
 use crate::conversion::*;
 use crate::errors::Result;
+use failure::format_err;
+use rustling_ontology::dimension::Precision as RustlingPrecision;
+use rustling_ontology::output::{
+    AmountOfMoneyOutput, DatetimeIntervalKind, DatetimeIntervalOutput, DatetimeOutput,
+    DurationOutput, FloatOutput, IntegerOutput, OrdinalOutput, Output, OutputKind,
+    PercentageOutput, TemperatureOutput,
+};
+use rustling_ontology::Grain as RustlingGrain;
+use rustling_ontology::Lang as RustlingLanguage;
+use rustling_ontology::ParserMatch;
+use snips_nlu_ontology::*;
 
 impl OntologyFrom<IntegerOutput> for NumberValue {
     fn ontology_from(rustling_output: IntegerOutput) -> Self {

@@ -1,6 +1,6 @@
 [package]
 name = "snips-nlu-parsers"
-version = "0.3.0"
+version = "0.4.0-SNAPSHOT"
 authors = ["Adrien Ball <adrien.ball@snips.ai>"]
 edition = "2018"
 
@@ -20,7 +20,7 @@ regex = "1.1"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-gazetteer-entity-parser = { git = "https://github.com/snipsco/gazetteer-entity-parser", tag = "0.7.0" }
+gazetteer-entity-parser = { git = "https://github.com/snipsco/gazetteer-entity-parser", tag = "0.7.2" }
 rustling-ontology = { git = "https://github.com/snipsco/rustling-ontology", tag = "0.19.0" }
 snips-nlu-ontology = { git = "https://github.com/snipsco/snips-nlu-ontology", tag = "0.65.0" }
 snips-nlu-utils = { git = "https://github.com/snipsco/snips-nlu-utils", tag = "0.8.0" }

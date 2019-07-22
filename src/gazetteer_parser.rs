@@ -1,9 +1,5 @@
-use std::fmt::Debug;
-use std::fs;
-use std::fs::File;
-use std::ops::Range;
-use std::path::Path;
-
+use crate::conversion::gazetteer_entities::convert_to_slot_value;
+use crate::errors::*;
 use failure::{format_err, ResultExt};
 pub use gazetteer_entity_parser::{
     EntityValue, Parser as EntityParser, ParserBuilder as EntityParserBuilder,
@@ -14,9 +10,11 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use snips_nlu_ontology::{BuiltinEntity, BuiltinGazetteerEntityKind, IntoBuiltinEntityKind};
 use snips_nlu_utils::string::substring_with_char_range;
-
-use crate::conversion::gazetteer_entities::convert_to_slot_value;
-use crate::errors::*;
+use std::fmt::Debug;
+use std::fs;
+use std::fs::File;
+use std::ops::Range;
+use std::path::Path;
 
 pub trait EntityIdentifier:
     Clone + Debug + PartialEq + Serialize + DeserializeOwned + Sized
@@ -57,7 +55,7 @@ impl GazetteerParser<BuiltinGazetteerEntityKind> {
     pub fn extend_gazetteer_entity(
         &mut self,
         entity_kind: BuiltinGazetteerEntityKind,
-        entity_values: impl Iterator<Item=EntityValue>,
+        entity_values: impl Iterator<Item = EntityValue>,
     ) -> Result<()> {
         self.entity_parsers
             .iter_mut()
@@ -282,8 +280,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use gazetteer_entity_parser::EntityValue;
-    use gazetteer_entity_parser::ParserBuilder;
+    use gazetteer_entity_parser::{EntityValue, LicenseInfo, ParserBuilder};
     use snips_nlu_ontology::{
         BuiltinEntityKind, BuiltinGazetteerEntityKind, SlotValue, StringValue,
     };
@@ -294,7 +291,11 @@ mod test {
     use super::*;
 
     fn get_test_custom_gazetteer_parser() -> GazetteerParser<String> {
-        let artist_entity_parser_builder = get_test_music_artist_parser_builder();
+        let artist_entity_parser_builder =
+            get_test_music_artist_parser_builder().license_info(LicenseInfo {
+                filename: "LICENSE".to_string(),
+                content: "Some license content\nhere\n".to_string(),
+            });
         let track_entity_parser_builder = get_test_music_track_parser_builder();
         let gazetteer_parser_builder = GazetteerParserBuilder {
             entity_parsers: vec![
@@ -451,6 +452,8 @@ mod test {
         let loaded_gazetteer_parser = GazetteerParser::from_path(&parser_dir).unwrap();
 
         // Then
+        let expected_license_path = parser_dir.join("parser_1").join("LICENSE");
+        assert!(expected_license_path.exists());
         assert_eq!(gazetteer_parser, loaded_gazetteer_parser);
     }
 
