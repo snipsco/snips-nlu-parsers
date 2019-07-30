@@ -7,7 +7,6 @@ pub use gazetteer_entity_parser::{
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_derive::{Deserialize, Serialize};
-use serde_json;
 use snips_nlu_ontology::{BuiltinEntity, BuiltinGazetteerEntityKind, IntoBuiltinEntityKind};
 use snips_nlu_utils::string::substring_with_char_range;
 use std::fmt::Debug;

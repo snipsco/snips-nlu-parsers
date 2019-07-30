@@ -8,7 +8,6 @@ pub use gazetteer_entity_parser::EntityValue;
 use itertools::Itertools;
 use rustling_ontology::{build_parser, OutputKind, Parser as RustlingParser, ResolverContext};
 use serde_derive::{Deserialize, Serialize};
-use serde_json;
 use snips_nlu_ontology::*;
 use snips_nlu_utils::string::{convert_to_byte_range, convert_to_char_index};
 use std::fs;
