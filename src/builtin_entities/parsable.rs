@@ -1,6 +1,6 @@
 use crate::builtin_entities::examples::*;
 use crate::builtin_entities::supported_languages::supported_languages;
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use snips_nlu_ontology::{BuiltinEntityKind, IntoBuiltinEntityKind, Language};
 
 pub trait ParsableEntityKind {
