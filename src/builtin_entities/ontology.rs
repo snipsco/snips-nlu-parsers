@@ -1,5 +1,5 @@
 use crate::parsable::{BuiltinEntityKindDetails, ParsableEntityKind, ParsableLanguage};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use snips_nlu_ontology::Language;
 
 #[derive(Serialize, Deserialize, Clone)]
