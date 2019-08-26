@@ -178,6 +178,7 @@ impl BuiltinEntityParser {
                         range: convert_to_char_index(&sentence, original_start)
                             ..convert_to_char_index(&sentence, original_end),
                         entity: ent.entity,
+                        alternatives: ent.alternatives,
                         entity_kind: ent.entity_kind,
                     };
                     Some(original_ent)
@@ -272,7 +273,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_entities_extraction() {
+    fn test_should_parse_grammar_entities() {
         let parser = BuiltinEntityParserLoader::new(Language::EN).load().unwrap();
         assert_eq!(
             vec![BuiltinEntityKind::Number, BuiltinEntityKind::Date],
@@ -378,7 +379,7 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_with_empty_scope() {
+    fn test_should_parser_builtin_entities_with_empty_scope() {
         let parser = BuiltinEntityParserLoader::new(Language::EN).load().unwrap();
         let entities = parser
             .extract_entities("tomorrow morning", Some(&[]))
@@ -387,7 +388,7 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_with_gazetteer_entities() {
+    fn test_should_parse_gazetteer_entities() {
         // Given
         let language = Language::FR;
         let parser = BuiltinEntityParserLoader::new(language)
@@ -410,6 +411,7 @@ mod test {
             entity: SlotValue::MusicArtist(StringValue {
                 value: "The Rolling Stones".to_string(),
             }),
+            alternatives: vec![],
             entity_kind: BuiltinEntityKind::MusicArtist,
         };
         assert_eq!(vec![expected_entity], above_threshold_entity);
@@ -417,7 +419,7 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_with_extended_gazetteer_entities() {
+    fn test_should_parse_extended_gazetteer_entities() {
         // Given
         let language = Language::EN;
         let mut parser = BuiltinEntityParserLoader::new(language)
@@ -447,6 +449,7 @@ mod test {
             entity: SlotValue::MusicArtist(StringValue {
                 value: "My resolved extended artist".to_string(),
             }),
+            alternatives: vec![],
             entity_kind: BuiltinEntityKind::MusicArtist,
         };
         assert_eq!(vec![expected_entity], entities);
@@ -473,7 +476,47 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_for_non_space_separated_languages() {
+    fn test_should_parse_gazetteer_entities_with_alternatives() {
+        // Given
+        let language = Language::FR;
+        let mut parser = BuiltinEntityParserLoader::new(language)
+            .use_gazetter_parser(test_path().join("builtin_gazetteer_parser"))
+            .load()
+            .unwrap();
+
+        parser
+            .extend_gazetteer_entity(
+                BuiltinGazetteerEntityKind::MusicArtist,
+                vec![EntityValue {
+                    raw_value: "the crying stones".to_string(),
+                    resolved_value: "The Crying Stones".to_string(),
+                }]
+                .into_iter(),
+            )
+            .unwrap();
+
+        // When
+        let parsed_entity = parser
+            .extract_entities("Je voudrais écouter the stones s'il vous plaît", None)
+            .unwrap();
+
+        // Then
+        let expected_entity = BuiltinEntity {
+            value: "the stones".to_string(),
+            range: 20..30,
+            entity: SlotValue::MusicArtist(StringValue {
+                value: "The Crying Stones".to_string(),
+            }),
+            alternatives: vec![SlotValue::MusicArtist(StringValue {
+                value: "The Rolling Stones".to_string(),
+            })],
+            entity_kind: BuiltinEntityKind::MusicArtist,
+        };
+        assert_eq!(vec![expected_entity], parsed_entity);
+    }
+
+    #[test]
+    fn test_should_parse_builtin_entities_for_non_space_separated_languages() {
         let parser = BuiltinEntityParserLoader::new(Language::JA).load().unwrap();
         let expected_datetime_value = InstantTimeValue {
             value: "2013-02-10 00:00:00 +01:00".to_string(),
@@ -486,6 +529,7 @@ mod test {
             range: 10..24,
             entity_kind: BuiltinEntityKind::Datetime,
             entity: InstantTime(expected_datetime_value.clone()),
+            alternatives: vec![],
         };
 
         let parsed_entities = parser

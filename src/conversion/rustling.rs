@@ -179,6 +179,7 @@ pub fn convert_to_builtin(input: &str, parser_match: ParserMatch<Output>) -> Bui
         value: input[parser_match.byte_range.0..parser_match.byte_range.1].into(),
         range: parser_match.char_range.0..parser_match.char_range.1,
         entity: parser_match.value.clone().ontology_into(),
+        alternatives: vec![],
         entity_kind: BuiltinEntityKind::ontology_from(&parser_match.value),
     }
 }
