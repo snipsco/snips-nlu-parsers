@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- Add `alternative_resolved_values` attribute to `GazetteerEntityMatch` [#36](https://github.com/snipsco/snips-nlu-parsers/pull/36)
+
 ## [0.3.1]
 ### Added
 - Add Builtin Entity support per Language [#29](https://github.com/snipsco/snips-nlu-parsers/pull/29)
