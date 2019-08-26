@@ -134,6 +134,7 @@ where
         &self,
         sentence: &str,
         filter_entities: Option<&[T]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<GazetteerEntityMatch<T>>> {
         Ok(self
             .entity_parsers
@@ -146,7 +147,7 @@ where
             .map(|parser| {
                 Ok(parser
                     .parser
-                    .run(&sentence.to_lowercase())?
+                    .run(&sentence.to_lowercase(), max_alternative_resolved_values)?
                     .into_iter()
                     .map(|parsed_value| GazetteerEntityMatch {
                         value: substring_with_char_range(sentence.to_string(), &parsed_value.range),
@@ -173,9 +174,10 @@ impl GazetteerParser<BuiltinGazetteerEntityKind> {
         &self,
         sentence: &str,
         filter_entities: Option<&[BuiltinGazetteerEntityKind]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<BuiltinEntity>> {
         Ok(self
-            .extract_entities(sentence, filter_entities)?
+            .extract_entities(sentence, filter_entities, max_alternative_resolved_values)?
             .into_iter()
             .map(|entity_match| {
                 let entity_identifier = entity_match.entity_identifier;
@@ -368,6 +370,7 @@ mod test {
             .gazetteer(gazetteer!(
                 ("the rolling stones", "The Rolling Stones"),
                 ("the crying stones", "The Crying Stones"),
+                ("the loving stones", "The Loving Stones"),
                 ("blink one eight two", "Blink 182"),
             ))
     }
@@ -379,7 +382,7 @@ mod test {
 
         // When
         let input = "I want to listen to the track harder better faster please";
-        let result = gazetteer_parser.extract_entities(input, None);
+        let result = gazetteer_parser.extract_entities(input, None, 5);
 
         // Then
         let expected_match = GazetteerEntityMatch {
@@ -399,7 +402,7 @@ mod test {
 
         // When
         let input = "I want to listen to the track harder better please";
-        let result = gazetteer_parser.extract_entities(input, None);
+        let result = gazetteer_parser.extract_entities(input, None, 5);
 
         // Then
         assert_eq!(Some(vec![]), result.ok());
@@ -413,9 +416,9 @@ mod test {
         // When
         let input = "I want to listen to what s my age again by blink one eight two";
         let artist_scope: &[String] = &["music_artist".to_string()];
-        let result_artist = gazetteer_parser.extract_entities(input, Some(artist_scope));
+        let result_artist = gazetteer_parser.extract_entities(input, Some(artist_scope), 5);
         let track_scope: &[String] = &["music_track".to_string()];
-        let result_track = gazetteer_parser.extract_entities(input, Some(track_scope));
+        let result_track = gazetteer_parser.extract_entities(input, Some(track_scope), 5);
 
         // Then
         let expected_artist_match = GazetteerEntityMatch {
@@ -451,7 +454,7 @@ mod test {
 
         // When
         let input = "I want to listen to the stones";
-        let result = gazetteer_parser.extract_entities(input, None);
+        let result = gazetteer_parser.extract_entities(input, None, 1);
 
         // Then
         let expected_match = GazetteerEntityMatch {
@@ -471,7 +474,7 @@ mod test {
 
         // When
         let input = "I want to listen to the track harder better faster please";
-        let result = builtin_gazetteer_parser.extract_builtin_entities(input, None);
+        let result = builtin_gazetteer_parser.extract_builtin_entities(input, None, 5);
 
         // Then
         let expected_match = BuiltinEntity {

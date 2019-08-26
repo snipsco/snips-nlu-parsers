@@ -61,6 +61,35 @@ class TestGazetteerEntityParser(unittest.TestCase):
             },
         }
 
+    @staticmethod
+    def get_ambiguous_music_artist_entity_config():
+        return {
+            "entity_identifier": "music_artist",
+            "entity_parser": {
+                "gazetteer": [
+                    {
+                        "raw_value": "the rolling stones",
+                        "resolved_value": "The Rolling Stones"
+                    },
+                    {
+                        "raw_value": "the crying stones",
+                        "resolved_value": "The Crying Stones"
+                    },
+                    {
+                        "raw_value": "the flying stones",
+                        "resolved_value": "The Flying Stones"
+                    },
+                    {
+                        "raw_value": "the loving stones",
+                        "resolved_value": "The Loving Stones"
+                    },
+                ],
+                "threshold": 0.6,
+                "n_gazetteer_stop_words": None,
+                "additional_stop_words": None,
+            },
+        }
+
     def test_should_parse_from_built_parser(self):
         # Given
         parser_config = self.get_test_parser_config()
@@ -74,6 +103,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
             {
                 "value": "the stones",
                 "resolved_value": "The Rolling Stones",
+                "alternative_resolved_values": [],
                 "range": {"start": 20, "end": 30},
                 "entity_identifier": "music_artist"
             }
@@ -96,7 +126,48 @@ class TestGazetteerEntityParser(unittest.TestCase):
             {
                 "value": "blink one eight two",
                 "resolved_value": "Blink 182",
+                "alternative_resolved_values": [],
                 "range": {"start": 43, "end": 62},
+                "entity_identifier": "music_artist"
+            }
+        ]
+
+        expected_track_result = [
+            {
+                "value": "what s my age again",
+                "resolved_value": "What's my age again",
+                "alternative_resolved_values": [],
+                "range": {"start": 20, "end": 39},
+                "entity_identifier": "music_track"
+            }
+        ]
+
+        self.assertListEqual(expected_artist_result, res_artist)
+        self.assertListEqual(expected_track_result, res_track)
+
+    def test_should_parse_from_built_parser_with_max_alternatives(self):
+        # Given
+        parser_config = {
+            "entity_parsers": [
+                self.get_ambiguous_music_artist_entity_config()
+            ]
+        }
+        parser = GazetteerEntityParser.build(parser_config)
+
+        # When
+        text = "Play me the stones"
+        res = parser.parse(text, max_alternative_resolved_values=2)
+
+        # Then
+        expected_artist_result = [
+            {
+                "value": "the stones",
+                "resolved_value": "The Rolling Stones",
+                "alternative_resolved_values": [
+                    "The Crying Stones",
+                    "The Flying Stones"
+                ],
+                "range": {"start": 8, "end": 18},
                 "entity_identifier": "music_artist"
             }
         ]
@@ -110,8 +181,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
             }
         ]
 
-        self.assertListEqual(expected_artist_result, res_artist)
-        self.assertListEqual(expected_track_result, res_track)
+        self.assertListEqual(expected_artist_result, res)
 
     def test_should_persist_parser(self):
         # Given
@@ -141,6 +211,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
             {
                 "value": "the stones",
                 "resolved_value": "The Rolling Stones",
+                "alternative_resolved_values": [],
                 "range": {"start": 20, "end": 30},
                 "entity_identifier": "music_artist"
             }
@@ -160,6 +231,7 @@ class TestGazetteerEntityParser(unittest.TestCase):
             {
                 "value": "the stones",
                 "resolved_value": "The Rolling Stones",
+                "alternative_resolved_values": [],
                 "range": {"start": 20, "end": 30},
                 "entity_identifier": "music_artist"
             }

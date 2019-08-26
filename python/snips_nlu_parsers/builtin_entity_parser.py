@@ -38,7 +38,7 @@ class BuiltinEntityParser(object):
                                    "builtin entity parser")
         return cls(parser)
 
-    def parse(self, text, scope=None):
+    def parse(self, text, scope=None, max_alternative_resolved_values=5):
         """Extracts builtin entities from *text*
 
         Args:
@@ -47,6 +47,9 @@ class BuiltinEntityParser(object):
                 defined, the parser will extract entities using the provided
                 scope instead of the entire scope of all available entities.
                 This allows to look for specifics builtin entity kinds.
+            max_alternative_resolved_values (int, optional): Maximum number of
+                alternative resolved values to return in addition to the top
+                one (default 5).
 
         Returns:
             list of dict: The list of extracted entities
@@ -66,7 +69,8 @@ class BuiltinEntityParser(object):
 
         with string_pointer(c_char_p()) as ptr:
             exit_code = lib.snips_nlu_parsers_extract_builtin_entities_json(
-                self._parser, text.encode("utf8"), scope, byref(ptr))
+                self._parser, text.encode("utf8"), scope,
+                max_alternative_resolved_values, byref(ptr))
             check_ffi_error(exit_code, "Something went wrong when extracting "
                                        "builtin entities")
             result = string_at(ptr)

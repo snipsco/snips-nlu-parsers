@@ -60,9 +60,15 @@ pub fn extract_gazetteer_entity_json(
     ptr: *const CGazetteerEntityParser,
     sentence: *const libc::c_char,
     filter_entity_kinds: *const CStringArray,
+    max_alternative_resolved_values: libc::c_uint,
     results: *mut *const libc::c_char,
 ) -> Result<()> {
-    let entities = extract_gazetteer_entity(ptr, sentence, filter_entity_kinds)?;
+    let entities = extract_gazetteer_entity(
+        ptr,
+        sentence,
+        filter_entity_kinds,
+        max_alternative_resolved_values,
+    )?;
     let json = ::serde_json::to_string(&entities)?;
 
     let cs = convert_to_c_string!(json);
@@ -75,6 +81,7 @@ pub fn extract_gazetteer_entity(
     ptr: *const CGazetteerEntityParser,
     sentence: *const libc::c_char,
     filter_entity_kinds: *const CStringArray,
+    max_alternative_resolved_values: libc::c_uint,
 ) -> Result<Vec<GazetteerEntityMatch<String>>> {
     let parser = get_parser!(ptr);
     let sentence = unsafe { CStr::from_ptr(sentence) }.to_str()?;
@@ -97,7 +104,11 @@ pub fn extract_gazetteer_entity(
         None
     };
 
-    parser.extract_entities(sentence, opt_filters.as_ref().map(|filters| &**filters))
+    parser.extract_entities(
+        sentence,
+        opt_filters.as_ref().map(|filters| &**filters),
+        max_alternative_resolved_values as usize,
+    )
 }
 
 pub fn destroy_gazetteer_entity_parser(ptr: *mut CGazetteerEntityParser) -> Result<()> {

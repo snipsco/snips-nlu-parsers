@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - Add `alternative_resolved_values` attribute to `GazetteerEntityMatch` [#36](https://github.com/snipsco/snips-nlu-parsers/pull/36)
+- Add `max_alternative_resolved_values` parameter to main entity extraction APIs [#36](https://github.com/snipsco/snips-nlu-parsers/pull/36)
 
 ## [0.3.1]
 ### Added
@@ -49,6 +50,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
+[Unreleased]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.1...HEAD
 [0.3.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.3...0.3.0
 [0.2.3]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.2...0.2.3
