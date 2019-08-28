@@ -1,17 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.4.0] - 2019-08-28
 ### Added
 - Add `alternative_resolved_values` attribute to `GazetteerEntityMatch` [#36](https://github.com/snipsco/snips-nlu-parsers/pull/36)
 - Add `max_alternative_resolved_values` parameter to main entity extraction APIs [#36](https://github.com/snipsco/snips-nlu-parsers/pull/36)
 
-## [0.3.1]
+## [0.3.1] - 2019-07-23
 ### Added
 - Add Builtin Entity support per Language [#29](https://github.com/snipsco/snips-nlu-parsers/pull/29)
 - Bump `gazetteer-entity-parser` to `0.7.1` in order to handle license files [#28](https://github.com/snipsco/snips-nlu-parsers/pull/28)
 
-## [0.3.0]
+## [0.3.0] - 2019-07-12
 ### Changed
 - Bump `snips-nlu-ontology` to `0.65.0` [#26](https://github.com/snipsco/snips-nlu-parsers/pull/26)
 - Bump `rustling-ontology` to `0.19.0`  [#26](https://github.com/snipsco/snips-nlu-parsers/pull/26)
@@ -50,7 +50,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
-[Unreleased]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.1...HEAD
+[0.4.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.3...0.3.0
 [0.2.3]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.2...0.2.3
