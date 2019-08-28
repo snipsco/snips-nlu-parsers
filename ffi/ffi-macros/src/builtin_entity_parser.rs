@@ -86,12 +86,18 @@ pub fn extract_builtin_entity_c(
     ptr: *const CBuiltinEntityParser,
     sentence: *const libc::c_char,
     filter_entity_kinds: *const CStringArray,
+    max_alternative_resolved_values: libc::c_uint,
     results: *mut *const CBuiltinEntityArray,
 ) -> Result<()> {
-    let c_entities = extract_builtin_entity(ptr, sentence, filter_entity_kinds)?
-        .into_iter()
-        .map(CBuiltinEntity::from)
-        .collect::<Vec<_>>();
+    let c_entities = extract_builtin_entity(
+        ptr,
+        sentence,
+        filter_entity_kinds,
+        max_alternative_resolved_values,
+    )?
+    .into_iter()
+    .map(CBuiltinEntity::from)
+    .collect::<Vec<_>>();
     let c_entities = CBuiltinEntityArray::from(c_entities).into_raw_pointer();
 
     unsafe {
@@ -105,9 +111,15 @@ pub fn extract_builtin_entity_json(
     ptr: *const CBuiltinEntityParser,
     sentence: *const libc::c_char,
     filter_entity_kinds: *const CStringArray,
+    max_alternative_resolved_values: libc::c_uint,
     results: *mut *const libc::c_char,
 ) -> Result<()> {
-    let entities = extract_builtin_entity(ptr, sentence, filter_entity_kinds)?;
+    let entities = extract_builtin_entity(
+        ptr,
+        sentence,
+        filter_entity_kinds,
+        max_alternative_resolved_values,
+    )?;
     let json = ::serde_json::to_string(&entities)?;
 
     let cs = convert_to_c_string!(json);
@@ -120,6 +132,7 @@ pub fn extract_builtin_entity(
     ptr: *const CBuiltinEntityParser,
     sentence: *const libc::c_char,
     filter_entity_kinds: *const CStringArray,
+    max_alternative_resolved_values: libc::c_uint,
 ) -> Result<Vec<BuiltinEntity>> {
     let parser = get_parser!(ptr);
     let sentence = unsafe { CStr::from_ptr(sentence) }.to_str()?;
@@ -146,7 +159,11 @@ pub fn extract_builtin_entity(
     };
     let opt_filters = opt_filters.as_ref().map(|vec| vec.as_slice());
 
-    parser.extract_entities(sentence, opt_filters)
+    parser.extract_entities(
+        sentence,
+        opt_filters,
+        max_alternative_resolved_values as usize,
+    )
 }
 
 pub fn destroy_builtin_entity_parser(ptr: *mut CBuiltinEntityParser) -> Result<()> {

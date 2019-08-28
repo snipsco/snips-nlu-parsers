@@ -53,12 +53,14 @@ macro_rules! export_nlu_parsers_c_symbols {
             ptr: *const $crate::CBuiltinEntityParser,
             sentence: *const ::libc::c_char,
             filter_entity_kinds: *const ::ffi_utils::CStringArray,
+            max_alternative_resolved_values: ::libc::c_uint,
             results: *mut *const snips_nlu_ontology_ffi_macros::CBuiltinEntityArray,
         ) -> ::ffi_utils::SNIPS_RESULT {
             wrap!($crate::extract_builtin_entity_c(
                 ptr,
                 sentence,
                 filter_entity_kinds,
+                max_alternative_resolved_values,
                 results
             ))
         }
@@ -68,12 +70,14 @@ macro_rules! export_nlu_parsers_c_symbols {
             ptr: *const $crate::CBuiltinEntityParser,
             sentence: *const ::libc::c_char,
             filter_entity_kinds: *const ::ffi_utils::CStringArray,
+            max_alternative_resolved_values: ::libc::c_uint,
             results: *mut *const ::libc::c_char,
         ) -> ::ffi_utils::SNIPS_RESULT {
             wrap!($crate::extract_builtin_entity_json(
                 ptr,
                 sentence,
                 filter_entity_kinds,
+                max_alternative_resolved_values,
                 results
             ))
         }
@@ -123,12 +127,14 @@ macro_rules! export_nlu_parsers_c_symbols {
             ptr: *const $crate::CGazetteerEntityParser,
             sentence: *const ::libc::c_char,
             filter_entity_kinds: *const ::ffi_utils::CStringArray,
+            max_alternative_resolved_values: ::libc::c_uint,
             results: *mut *const ::libc::c_char,
         ) -> ::ffi_utils::SNIPS_RESULT {
             wrap!($crate::extract_gazetteer_entity_json(
                 ptr,
                 sentence,
                 filter_entity_kinds,
+                max_alternative_resolved_values,
                 results
             ))
         }

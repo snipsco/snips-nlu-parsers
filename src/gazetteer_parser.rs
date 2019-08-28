@@ -121,6 +121,7 @@ where
 {
     pub value: String,
     pub resolved_value: String,
+    pub alternative_resolved_values: Vec<String>,
     pub range: Range<usize>,
     pub entity_identifier: T,
 }
@@ -133,6 +134,7 @@ where
         &self,
         sentence: &str,
         filter_entities: Option<&[T]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<GazetteerEntityMatch<T>>> {
         Ok(self
             .entity_parsers
@@ -145,12 +147,17 @@ where
             .map(|parser| {
                 Ok(parser
                     .parser
-                    .run(&sentence.to_lowercase())?
+                    .run(&sentence.to_lowercase(), max_alternative_resolved_values)?
                     .into_iter()
                     .map(|parsed_value| GazetteerEntityMatch {
                         value: substring_with_char_range(sentence.to_string(), &parsed_value.range),
                         range: parsed_value.range,
-                        resolved_value: parsed_value.resolved_value,
+                        resolved_value: parsed_value.resolved_value.resolved,
+                        alternative_resolved_values: parsed_value
+                            .alternatives
+                            .into_iter()
+                            .map(|v| v.resolved)
+                            .collect(),
                         entity_identifier: parser.entity_identifier.clone(),
                     })
                     .collect::<Vec<_>>())
@@ -167,18 +174,25 @@ impl GazetteerParser<BuiltinGazetteerEntityKind> {
         &self,
         sentence: &str,
         filter_entities: Option<&[BuiltinGazetteerEntityKind]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<BuiltinEntity>> {
         Ok(self
-            .extract_entities(sentence, filter_entities)?
+            .extract_entities(sentence, filter_entities, max_alternative_resolved_values)?
             .into_iter()
-            .map(|entity_match| BuiltinEntity {
-                value: entity_match.value,
-                range: entity_match.range,
-                entity: convert_to_slot_value(
-                    entity_match.resolved_value,
-                    entity_match.entity_identifier,
-                ),
-                entity_kind: entity_match.entity_identifier.into_builtin_kind(),
+            .map(|entity_match| {
+                let entity_identifier = entity_match.entity_identifier;
+                let alternatives = entity_match
+                    .alternative_resolved_values
+                    .into_iter()
+                    .map(|alternative| convert_to_slot_value(alternative, entity_identifier))
+                    .collect();
+                BuiltinEntity {
+                    value: entity_match.value,
+                    range: entity_match.range,
+                    entity: convert_to_slot_value(entity_match.resolved_value, entity_identifier),
+                    alternatives,
+                    entity_kind: entity_identifier.into_builtin_kind(),
+                }
             })
             .collect())
     }
@@ -278,7 +292,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use gazetteer_entity_parser::{EntityValue, LicenseInfo, ParserBuilder};
+    use gazetteer_entity_parser::{gazetteer, EntityValue, Gazetteer, LicenseInfo, ParserBuilder};
     use snips_nlu_ontology::{
         BuiltinEntityKind, BuiltinGazetteerEntityKind, SlotValue, StringValue,
     };
@@ -290,11 +304,11 @@ mod test {
 
     fn get_test_custom_gazetteer_parser() -> GazetteerParser<String> {
         let artist_entity_parser_builder =
-            get_test_music_artist_parser_builder().license_info(LicenseInfo {
+            get_music_artist_parser_builder().license_info(LicenseInfo {
                 filename: "LICENSE".to_string(),
                 content: "Some license content\nhere\n".to_string(),
             });
-        let track_entity_parser_builder = get_test_music_track_parser_builder();
+        let track_entity_parser_builder = get_music_track_parser_builder();
         let gazetteer_parser_builder = GazetteerParserBuilder {
             entity_parsers: vec![
                 GazetteerEntityParserBuilder {
@@ -311,8 +325,8 @@ mod test {
     }
 
     fn get_test_builtin_gazetteer_parser() -> GazetteerParser<BuiltinGazetteerEntityKind> {
-        let artist_entity_parser_builder = get_test_music_artist_parser_builder();
-        let track_entity_parser_builder = get_test_music_track_parser_builder();
+        let artist_entity_parser_builder = get_music_artist_parser_builder();
+        let track_entity_parser_builder = get_music_track_parser_builder();
         let gazetteer_parser_builder = GazetteerParserBuilder {
             entity_parsers: vec![
                 GazetteerEntityParserBuilder {
@@ -328,31 +342,37 @@ mod test {
         gazetteer_parser_builder.build().unwrap()
     }
 
-    fn get_test_music_track_parser_builder() -> ParserBuilder {
+    fn get_music_track_parser_builder() -> ParserBuilder {
         let track_entity_parser_builder = EntityParserBuilder::default()
             .minimum_tokens_ratio(0.7)
-            .add_value(EntityValue {
-                raw_value: "harder better faster stronger".to_string(),
-                resolved_value: "Harder Better Faster Stronger".to_string(),
-            })
-            .add_value(EntityValue {
-                raw_value: "what s my age again".to_string(),
-                resolved_value: "What's my age again".to_string(),
-            });
+            .gazetteer(gazetteer!(
+                (
+                    "harder better faster stronger",
+                    "Harder Better Faster Stronger"
+                ),
+                ("what s my age again", "What's my age again"),
+            ));
         track_entity_parser_builder
     }
 
-    fn get_test_music_artist_parser_builder() -> ParserBuilder {
+    fn get_music_artist_parser_builder() -> ParserBuilder {
         EntityParserBuilder::default()
             .minimum_tokens_ratio(0.6)
-            .add_value(EntityValue {
-                raw_value: "the rolling stones".to_string(),
-                resolved_value: "The Rolling Stones".to_string(),
-            })
-            .add_value(EntityValue {
-                raw_value: "blink one eight two".to_string(),
-                resolved_value: "Blink 182".to_string(),
-            })
+            .gazetteer(gazetteer!(
+                ("the rolling stones", "The Rolling Stones"),
+                ("blink one eight two", "Blink 182"),
+            ))
+    }
+
+    fn get_ambiguous_music_artist_parser_builder() -> ParserBuilder {
+        EntityParserBuilder::default()
+            .minimum_tokens_ratio(0.6)
+            .gazetteer(gazetteer!(
+                ("the rolling stones", "The Rolling Stones"),
+                ("the crying stones", "The Crying Stones"),
+                ("the loving stones", "The Loving Stones"),
+                ("blink one eight two", "Blink 182"),
+            ))
     }
 
     #[test]
@@ -362,12 +382,13 @@ mod test {
 
         // When
         let input = "I want to listen to the track harder better faster please";
-        let result = gazetteer_parser.extract_entities(input, None);
+        let result = gazetteer_parser.extract_entities(input, None, 5);
 
         // Then
         let expected_match = GazetteerEntityMatch {
             value: "harder better faster".to_string(),
             resolved_value: "Harder Better Faster Stronger".to_string(),
+            alternative_resolved_values: vec![],
             range: 30..50,
             entity_identifier: "music_track".to_string(),
         };
@@ -381,7 +402,7 @@ mod test {
 
         // When
         let input = "I want to listen to the track harder better please";
-        let result = gazetteer_parser.extract_entities(input, None);
+        let result = gazetteer_parser.extract_entities(input, None, 5);
 
         // Then
         assert_eq!(Some(vec![]), result.ok());
@@ -395,14 +416,15 @@ mod test {
         // When
         let input = "I want to listen to what s my age again by blink one eight two";
         let artist_scope: &[String] = &["music_artist".to_string()];
-        let result_artist = gazetteer_parser.extract_entities(input, Some(artist_scope));
+        let result_artist = gazetteer_parser.extract_entities(input, Some(artist_scope), 5);
         let track_scope: &[String] = &["music_track".to_string()];
-        let result_track = gazetteer_parser.extract_entities(input, Some(track_scope));
+        let result_track = gazetteer_parser.extract_entities(input, Some(track_scope), 5);
 
         // Then
         let expected_artist_match = GazetteerEntityMatch {
             value: "blink one eight two".to_string(),
             resolved_value: "Blink 182".to_string(),
+            alternative_resolved_values: vec![],
             range: 43..62,
             entity_identifier: "music_artist".to_string(),
         };
@@ -410,11 +432,39 @@ mod test {
         let expected_track_match = GazetteerEntityMatch {
             value: "what s my age again".to_string(),
             resolved_value: "What's my age again".to_string(),
+            alternative_resolved_values: vec![],
             range: 20..39,
             entity_identifier: "music_track".to_string(),
         };
         assert_eq!(Some(vec![expected_artist_match]), result_artist.ok());
         assert_eq!(Some(vec![expected_track_match]), result_track.ok());
+    }
+
+    #[test]
+    fn test_should_parse_with_alternatives() {
+        // Given
+        let gazetteer_parser = GazetteerParserBuilder {
+            entity_parsers: vec![GazetteerEntityParserBuilder {
+                entity_identifier: "music_artist".to_string(),
+                entity_parser: get_ambiguous_music_artist_parser_builder(),
+            }],
+        }
+        .build()
+        .unwrap();
+
+        // When
+        let input = "I want to listen to the stones";
+        let result = gazetteer_parser.extract_entities(input, None, 1);
+
+        // Then
+        let expected_match = GazetteerEntityMatch {
+            value: "the stones".to_string(),
+            resolved_value: "The Rolling Stones".to_string(),
+            alternative_resolved_values: vec!["The Crying Stones".to_string()],
+            range: 20..30,
+            entity_identifier: "music_artist".to_string(),
+        };
+        assert_eq!(Some(vec![expected_match]), result.ok());
     }
 
     #[test]
@@ -424,7 +474,7 @@ mod test {
 
         // When
         let input = "I want to listen to the track harder better faster please";
-        let result = builtin_gazetteer_parser.extract_builtin_entities(input, None);
+        let result = builtin_gazetteer_parser.extract_builtin_entities(input, None, 5);
 
         // Then
         let expected_match = BuiltinEntity {
@@ -432,6 +482,7 @@ mod test {
             entity: SlotValue::MusicTrack(StringValue {
                 value: "Harder Better Faster Stronger".to_string(),
             }),
+            alternatives: vec![],
             range: 30..50,
             entity_kind: BuiltinEntityKind::MusicTrack,
         };

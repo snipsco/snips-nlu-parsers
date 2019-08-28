@@ -72,11 +72,20 @@ impl BuiltinEntityParser {
         &self,
         sentence: &str,
         filter_entity_kinds: Option<&[BuiltinEntityKind]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<BuiltinEntity>> {
         if NON_SPACE_SEPARATED_LANGUAGES.contains(&self.language) {
-            self._extract_entities_for_non_space_separated(sentence, filter_entity_kinds)
+            self._extract_entities_for_non_space_separated(
+                sentence,
+                filter_entity_kinds,
+                max_alternative_resolved_values,
+            )
         } else {
-            self._extract_entities(sentence, filter_entity_kinds)
+            self._extract_entities(
+                sentence,
+                filter_entity_kinds,
+                max_alternative_resolved_values,
+            )
         }
     }
 
@@ -84,6 +93,7 @@ impl BuiltinEntityParser {
         &self,
         sentence: &str,
         filter_entity_kinds: Option<&[BuiltinEntityKind]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<BuiltinEntity>> {
         let context = ResolverContext::default();
         let rustling_output_kinds = self
@@ -120,6 +130,7 @@ impl BuiltinEntityParser {
                 gazetteer_parser.extract_builtin_entities(
                     sentence,
                     gazetteer_entity_kinds.as_ref().map(|kinds| &**kinds),
+                    max_alternative_resolved_values,
                 )?
             }
             None => vec![],
@@ -134,6 +145,7 @@ impl BuiltinEntityParser {
         &self,
         sentence: &str,
         filter_entity_kinds: Option<&[BuiltinEntityKind]>,
+        max_alternative_resolved_values: usize,
     ) -> Result<Vec<BuiltinEntity>> {
         let original_tokens_bytes_ranges: Vec<Range<usize>> = NON_SPACE_REGEX
             .find_iter(sentence)
@@ -152,7 +164,11 @@ impl BuiltinEntityParser {
         let ranges_mapping = get_ranges_mapping(&original_tokens_bytes_ranges);
 
         Ok(self
-            ._extract_entities(&*joined_sentence, filter_entity_kinds)?
+            ._extract_entities(
+                &*joined_sentence,
+                filter_entity_kinds,
+                max_alternative_resolved_values,
+            )?
             .into_iter()
             .filter_map(|ent| {
                 let byte_range = convert_to_byte_range(&*joined_sentence, &ent.range);
@@ -178,6 +194,7 @@ impl BuiltinEntityParser {
                         range: convert_to_char_index(&sentence, original_start)
                             ..convert_to_char_index(&sentence, original_end),
                         entity: ent.entity,
+                        alternatives: ent.alternatives,
                         entity_kind: ent.entity_kind,
                     };
                     Some(original_ent)
@@ -272,12 +289,12 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_entities_extraction() {
+    fn test_should_parse_grammar_entities() {
         let parser = BuiltinEntityParserLoader::new(Language::EN).load().unwrap();
         assert_eq!(
             vec![BuiltinEntityKind::Number, BuiltinEntityKind::Date],
             parser
-                .extract_entities("Book me a restaurant for two people tomorrow", None)
+                .extract_entities("Book me a restaurant for two people tomorrow", None, 0)
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -289,7 +306,8 @@ mod test {
             parser
                 .extract_entities(
                     "Book me a restaurant for tomorrow",
-                    Some(&[BuiltinEntityKind::Datetime])
+                    Some(&[BuiltinEntityKind::Datetime]),
+                    0,
                 )
                 .unwrap()
                 .iter()
@@ -300,7 +318,7 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Datetime],
             parser
-                .extract_entities("Book me a restaurant for tomorrow at 8pm", None)
+                .extract_entities("Book me a restaurant for tomorrow at 8pm", None, 0)
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -312,7 +330,8 @@ mod test {
             parser
                 .extract_entities(
                     "Book me a restaurant for tomorrow",
-                    Some(&[BuiltinEntityKind::Date])
+                    Some(&[BuiltinEntityKind::Date]),
+                    0
                 )
                 .unwrap()
                 .iter()
@@ -323,7 +342,7 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::TimePeriod],
             parser
-                .extract_entities("Book the meeting room from 10am to 11am", None)
+                .extract_entities("Book the meeting room from 10am to 11am", None, 0)
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -335,7 +354,8 @@ mod test {
             parser
                 .extract_entities(
                     "Book the meeting room from 10am to 11am",
-                    Some(&[BuiltinEntityKind::Time])
+                    Some(&[BuiltinEntityKind::Time]),
+                    0
                 )
                 .unwrap()
                 .iter()
@@ -346,7 +366,7 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Duration],
             parser
-                .extract_entities("The weather during two weeks", None)
+                .extract_entities("The weather during two weeks", None, 0)
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -356,7 +376,7 @@ mod test {
         assert_eq!(
             vec![BuiltinEntityKind::Percentage],
             parser
-                .extract_entities("Set light to ten percents", None)
+                .extract_entities("Set light to ten percents", None, 0)
                 .unwrap()
                 .iter()
                 .map(|e| e.entity_kind)
@@ -369,6 +389,7 @@ mod test {
                 .extract_entities(
                     "I would like to do a bank transfer of ten euros for my friends",
                     None,
+                    0,
                 )
                 .unwrap()
                 .iter()
@@ -378,16 +399,16 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_with_empty_scope() {
+    fn test_should_parser_builtin_entities_with_empty_scope() {
         let parser = BuiltinEntityParserLoader::new(Language::EN).load().unwrap();
         let entities = parser
-            .extract_entities("tomorrow morning", Some(&[]))
+            .extract_entities("tomorrow morning", Some(&[]), 0)
             .unwrap();
         assert_eq!(Vec::<BuiltinEntity>::new(), entities);
     }
 
     #[test]
-    fn test_entities_extraction_with_gazetteer_entities() {
+    fn test_should_parse_gazetteer_entities() {
         // Given
         let language = Language::FR;
         let parser = BuiltinEntityParserLoader::new(language)
@@ -397,10 +418,10 @@ mod test {
 
         // When
         let above_threshold_entity = parser
-            .extract_entities("Je voudrais écouter the stones s'il vous plaît", None)
+            .extract_entities("Je voudrais écouter the stones s'il vous plaît", None, 5)
             .unwrap();
         let below_threshold_entity = parser
-            .extract_entities("Je voudrais écouter les stones", None)
+            .extract_entities("Je voudrais écouter les stones", None, 5)
             .unwrap();
 
         // Then
@@ -410,6 +431,7 @@ mod test {
             entity: SlotValue::MusicArtist(StringValue {
                 value: "The Rolling Stones".to_string(),
             }),
+            alternatives: vec![],
             entity_kind: BuiltinEntityKind::MusicArtist,
         };
         assert_eq!(vec![expected_entity], above_threshold_entity);
@@ -417,7 +439,7 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_with_extended_gazetteer_entities() {
+    fn test_should_parse_extended_gazetteer_entities() {
         // Given
         let language = Language::EN;
         let mut parser = BuiltinEntityParserLoader::new(language)
@@ -437,7 +459,7 @@ mod test {
 
         // When
         let entities = parser
-            .extract_entities("I want to listen to my extended artist please", None)
+            .extract_entities("I want to listen to my extended artist please", None, 5)
             .unwrap();
 
         // Then
@@ -447,6 +469,7 @@ mod test {
             entity: SlotValue::MusicArtist(StringValue {
                 value: "My resolved extended artist".to_string(),
             }),
+            alternatives: vec![],
             entity_kind: BuiltinEntityKind::MusicArtist,
         };
         assert_eq!(vec![expected_entity], entities);
@@ -473,7 +496,53 @@ mod test {
     }
 
     #[test]
-    fn test_entities_extraction_for_non_space_separated_languages() {
+    fn test_should_parse_gazetteer_entities_with_alternatives() {
+        // Given
+        let language = Language::FR;
+        let mut parser = BuiltinEntityParserLoader::new(language)
+            .use_gazetter_parser(test_path().join("builtin_gazetteer_parser"))
+            .load()
+            .unwrap();
+
+        parser
+            .extend_gazetteer_entity(
+                BuiltinGazetteerEntityKind::MusicArtist,
+                vec![
+                    EntityValue {
+                        raw_value: "the crying stones".to_string(),
+                        resolved_value: "The Crying Stones".to_string(),
+                    },
+                    EntityValue {
+                        raw_value: "the loving stones".to_string(),
+                        resolved_value: "The Loving Stones".to_string(),
+                    },
+                ]
+                .into_iter(),
+            )
+            .unwrap();
+
+        // When
+        let parsed_entity = parser
+            .extract_entities("Je voudrais écouter the stones s'il vous plaît", None, 1)
+            .unwrap();
+
+        // Then
+        let expected_entity = BuiltinEntity {
+            value: "the stones".to_string(),
+            range: 20..30,
+            entity: SlotValue::MusicArtist(StringValue {
+                value: "The Crying Stones".to_string(),
+            }),
+            alternatives: vec![SlotValue::MusicArtist(StringValue {
+                value: "The Loving Stones".to_string(),
+            })],
+            entity_kind: BuiltinEntityKind::MusicArtist,
+        };
+        assert_eq!(vec![expected_entity], parsed_entity);
+    }
+
+    #[test]
+    fn test_should_parse_builtin_entities_for_non_space_separated_languages() {
         let parser = BuiltinEntityParserLoader::new(Language::JA).load().unwrap();
         let expected_datetime_value = InstantTimeValue {
             value: "2013-02-10 00:00:00 +01:00".to_string(),
@@ -486,12 +555,14 @@ mod test {
             range: 10..24,
             entity_kind: BuiltinEntityKind::Datetime,
             entity: InstantTime(expected_datetime_value.clone()),
+            alternatives: vec![],
         };
 
         let parsed_entities = parser
             .extract_entities(
                 " の カリフォル  二 千 十三 年二 月十 日  ニア州の天気予報は？",
                 None,
+                0,
             )
             .unwrap();
         assert_eq!(1, parsed_entities.len());
@@ -513,6 +584,7 @@ mod test {
                 .extract_entities(
                     "二 千 十三 年二 月十 日の カリフォルニア州の天気予報は？",
                     None,
+                    0,
                 )
                 .unwrap()
         );
@@ -525,7 +597,7 @@ mod test {
             for entity_kind in GrammarEntityKind::all() {
                 for example in entity_kind.examples(*language) {
                     let results = parser
-                        .extract_entities(example, Some(&[entity_kind.into_builtin_kind()]))
+                        .extract_entities(example, Some(&[entity_kind.into_builtin_kind()]), 5)
                         .unwrap();
                     assert_eq!(
                         1,

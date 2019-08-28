@@ -27,6 +27,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "unit": "celsius",
                     "value": 62.0
                 },
+                "alternatives": [],
                 "entity_kind": "snips/temperature",
                 "range": {"end": 34, "start": 9},
                 "value": "sixty two degrees celsius"
@@ -51,6 +52,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "unit": None,
                     "value": 62.0
                 },
+                "alternatives": [],
                 "entity_kind": "snips/temperature",
                 "range": {"end": 18, "start": 9},
                 "value": "sixty two"
@@ -76,6 +78,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "kind": "MusicArtist",
                     "value": "The Rolling Stones"
                 },
+                "alternatives": [],
                 "entity_kind": "snips/musicArtist",
                 "range": {"end": 30, "start": 20},
                 "value": "the stones"
@@ -123,15 +126,17 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "kind": "MusicArtist",
                     "value": "my first resolved custom artist"
                 },
+                "alternatives": [],
                 "entity_kind": "snips/musicArtist",
                 "range": {"end": 42, "start": 20},
-                "value": "my first custom artist"
+                "value": "my first custom artist",
             },
             {
                 "entity": {
                     "kind": "MusicArtist",
                     "value": "The Rolling Stones"
                 },
+                "alternatives": [],
                 "entity_kind": "snips/musicArtist",
                 "range": {"end": 77, "start": 59},
                 "value": "the rolling stones"
@@ -177,6 +182,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "unit": "degree",
                     "value": 9.0
                 },
+                "alternatives": [],
                 "range": {"start": 25, "end": 34},
                 "entity_kind": "snips/temperature"
             }
@@ -200,6 +206,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "unit": "degree",
                     "value": 9.0
                 },
+                "alternatives": [],
                 "range": {"start": 25, "end": 34},
                 "entity_kind": "snips/temperature"
             }
@@ -226,6 +233,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "kind": "MusicArtist",
                     "value": "The Rolling Stones"
                 },
+                "alternatives": [],
                 "range": {"start": 20, "end": 30},
                 "entity_kind": "snips/musicArtist"
             }
@@ -247,6 +255,7 @@ class TestBuiltinEntityParser(unittest.TestCase):
                     "kind": "MusicArtist",
                     "value": "The Rolling Stones"
                 },
+                "alternatives": [],
                 "range": {"start": 20, "end": 30},
                 "entity_kind": "snips/musicArtist"
             }
