@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2019-09-02
+### Changed
+- Bump `snips-nlu-ontology` to `0.67.1` [#39](https://github.com/snipsco/snips-nlu-parsers/pull/39)
+- Bump `rustling-ontology` to `0.19.1` [#40](https://github.com/snipsco/snips-nlu-parsers/pull/40)
+
 ## [0.4.0] - 2019-08-28
 ### Added
 - Add `alternative_resolved_values` attribute to `GazetteerEntityMatch` [#36](https://github.com/snipsco/snips-nlu-parsers/pull/36)
@@ -50,6 +55,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
+[0.4.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.2.3...0.3.0
