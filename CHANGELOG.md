@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-# [0.4.2]
+## [0.4.2]
 ### Added
 - Add support for datetime subtypes in French [#42](https://github.com/snipsco/snips-nlu-parsers/pull/42)
 
