@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [Unreleased]
+### Added
+- Add support for datetime subtypes in French [#42](https://github.com/snipsco/snips-nlu-parsers/pull/42)
+
+### Fixed
+- Bump `rustling-ontology` to `0.19.2` to fix issue with chrono [#43](https://github.com/snipsco/snips-nlu-parsers/pull/43)
+
 ## [0.4.1] - 2019-09-02
 ### Changed
 - Bump `snips-nlu-ontology` to `0.67.1` [#39](https://github.com/snipsco/snips-nlu-parsers/pull/39)
