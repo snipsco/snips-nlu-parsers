@@ -8,7 +8,7 @@ Installation
 Linux x86 / MacOS (>= 10.11) / Windows
 --------------------------------------
 
-Wheels and source distribution are available for Python2.7 as well as Python >= 3.4
+Wheels and source distribution are available for Python >= 3.5
 
 .. code-block:: bash
 
