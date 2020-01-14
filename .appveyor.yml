@@ -1,8 +1,5 @@
 environment:
   matrix:
-  - PYTHON: "C:\\Python27-x64"
-    TARGET: x86_64-pc-windows-msvc
-    TAG_SCENARIO: true
   - PYTHON: "C:\\Python36-x64"
     TARGET: x86_64-pc-windows-msvc
     TAG_SCENARIO: false
@@ -12,13 +9,16 @@ environment:
   - PYTHON: "C:\\Python37-x64"
     TARGET: x86_64-pc-windows-msvc
     TAG_SCENARIO: true
-  - PYTHON: "C:\\Python27"
-    TARGET: i686-pc-windows-msvc
+  - PYTHON: "C:\\Python38-x64"
+    TARGET: x86_64-pc-windows-msvc
     TAG_SCENARIO: true
   - PYTHON: "C:\\Python36"
     TARGET: i686-pc-windows-msvc
     TAG_SCENARIO: true
   - PYTHON: "C:\\Python37"
+    TARGET: i686-pc-windows-msvc
+    TAG_SCENARIO: true
+  - PYTHON: "C:\\Python38"
     TARGET: i686-pc-windows-msvc
     TAG_SCENARIO: true
 

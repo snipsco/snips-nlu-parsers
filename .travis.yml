@@ -13,12 +13,6 @@ matrix:
         - TOXENV=py36
     - if: branch = master
       language: python
-      python: 2.7
-      env:
-        - PYTHON_TESTS=true
-        - TOXENV=py27
-    - if: branch = master
-      language: python
       python: 3.7
         # cf https://github.com/travis-ci/travis-ci/issues/9815
       dist: xenial
@@ -26,6 +20,15 @@ matrix:
       env:
         - PYTHON_TESTS=true
         - TOXENV=py37
+    - if: branch = master
+      language: python
+      python: 3.8
+        # cf https://github.com/travis-ci/travis-ci/issues/9815
+      dist: xenial
+      sudo: true
+      env:
+        - PYTHON_TESTS=true
+        - TOXENV=py38
 
 before_install: . ./.travis/before_install.sh
 
