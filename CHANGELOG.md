@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.3]
+### Changed
+- Bump `rustling-ontology` to `0.19.3` [#46](https://github.com/snipsco/snips-nlu-parsers/pull/46)
+
 ## [0.4.2]
 ### Added
 - Add support for datetime subtypes in French [#42](https://github.com/snipsco/snips-nlu-parsers/pull/42)
@@ -62,6 +66,7 @@ All notable changes to this project will be documented in this file.
 - bump `snips-nlu-ontology` to `0.63.0`
 - re-export `gazetteer-entity-parser` crate
 
+[0.4.3]: https://github.com/snipsco/snips-nlu-parsers/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/snipsco/snips-nlu-parsers/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/snipsco/snips-nlu-parsers/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/snipsco/snips-nlu-parsers/compare/0.3.1...0.4.0
