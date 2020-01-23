@@ -81,7 +81,7 @@ impl OntologyFrom<DatetimeIntervalOutput> for TimeIntervalValue {
 impl OntologyFrom<AmountOfMoneyOutput> for AmountOfMoneyValue {
     fn ontology_from(rustling_output: AmountOfMoneyOutput) -> Self {
         Self {
-            value: rustling_output.value,
+            value: rustling_output.value as f32,
             precision: rustling_output.precision.ontology_into(),
             unit: rustling_output.unit.map(|s| s.to_string()),
         }
@@ -91,7 +91,7 @@ impl OntologyFrom<AmountOfMoneyOutput> for AmountOfMoneyValue {
 impl OntologyFrom<TemperatureOutput> for TemperatureValue {
     fn ontology_from(rustling_output: TemperatureOutput) -> Self {
         Self {
-            value: rustling_output.value,
+            value: rustling_output.value as f32,
             unit: rustling_output.unit.map(|s| s.to_string()),
         }
     }
