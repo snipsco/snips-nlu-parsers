@@ -1,6 +1,6 @@
 [package]
 name = "snips-nlu-parsers-python-ffi"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Adrien Ball <adrien.ball@snips.ai>"]
 edition = "2018"
 
@@ -12,6 +12,6 @@ crate-type = ["cdylib"]
 failure = "0.1"
 libc = "0.2"
 ffi-utils = { git = "https://github.com/snipsco/snips-utils-rs", rev = "291ce1d" }
-snips-nlu-parsers-ffi-macros = { git = "https://github.com/snipsco/snips-nlu-parsers", tag = "0.4.2" }
+snips-nlu-parsers-ffi-macros = { git = "https://github.com/snipsco/snips-nlu-parsers", tag = "0.4.3" }
 snips-nlu-ontology = { git = "https://github.com/snipsco/snips-nlu-ontology", tag = "0.67.1" }
 snips-nlu-ontology-ffi-macros = { git = "https://github.com/snipsco/snips-nlu-ontology", tag = "0.67.1" }
