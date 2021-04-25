@@ -1,0 +1,76 @@
+name: Build package with crossenv
+on:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile Python 3.7.3
+      run: |
+        wget -q https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz
+        mkdir build
+        cd build
+        tar xJf ../Python-3.7.3.tar.xz
+        cd Python-3.7.3
+        ./configure --prefix=`pwd`/../
+        make -j -l 4
+        make install
+      shell: bash
+    - name: Cross-compile Python 3.7.3
+      run: |
+        sudo apt-get install -y -qq gcc-arm-linux-gnueabihf
+        export PATH=`pwd`/build/bin:${PATH}
+        mkdir host
+        cd host
+        tar xJf ../Python-3.7.3.tar.xz
+        cd Python-3.7.3
+        ./configure \
+                --prefix=`pwd`/../ \
+                --host=arm-linux-gnueabihf \
+                --build=x86_64-linux-gnu \
+                --without-ensurepip \
+                ac_cv_buggy_getaddrinfo=no \
+                ac_cv_file__dev_ptmx=yes \
+                ac_cv_file__dev_ptc=no
+        make -j -l 4
+        make install
+      shell: bash
+    - name: Install and configure rust-cross
+      run: |
+        rustup target add arm-unknown-linux-gnueabihf
+        mkdir -p ~/.cargo
+        cat >>~/.cargo/config <<EOF
+        [target.arm-unknown-linux-gnueabihf]
+        linker = "arm-linux-gnueabihf-gcc"
+        EOF
+      shell: bash
+    - name: Install crossenv
+      run: |
+        cd python
+        ../build/bin/python3.7 -m pip install crossenv
+        ../build/bin/python3.7 -m crossenv ../host/bin/python3.7 venv
+      shell: bash
+    - name: Build for host
+      run: |
+        cd python
+        . venv/bin/activate
+        build-python -m pip install setuptools_rust
+        build-python -m pip install wheel
+        build-python setup.py bdist_wheel
+      shell: bash
+    - name: Build for target
+      run: |
+        cd python
+        export CARGO_BUILD_TARGET=arm-unknown-linux-gnueabihf
+        . venv/bin/activate
+        cross-python -m pip install setuptools_rust
+        cross-python -m pip install wheel
+        cross-python setup.py bdist_wheel
+      shell: bash
+    - name: Archive target wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheels
+        path: |
+            python/dist/*.whl
