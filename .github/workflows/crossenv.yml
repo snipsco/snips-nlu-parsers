@@ -51,19 +51,13 @@ jobs:
         ../build/bin/python3.7 -m pip install crossenv
         ../build/bin/python3.7 -m crossenv ../host/bin/python3.7 venv
       shell: bash
-    - name: Build for host
+    - name: Build for target, with build dependencies
       run: |
         cd python
         . venv/bin/activate
         build-python -m pip install setuptools_rust
         build-python -m pip install wheel
-        build-python setup.py bdist_wheel
-      shell: bash
-    - name: Build for target
-      run: |
-        cd python
         export CARGO_BUILD_TARGET=arm-unknown-linux-gnueabihf
-        . venv/bin/activate
         cross-python -m pip install setuptools_rust
         cross-python -m pip install wheel
         cross-python setup.py bdist_wheel
