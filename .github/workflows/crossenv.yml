@@ -17,10 +17,13 @@ jobs:
         make -j -l 4
         make install
       shell: bash
+    - name: Get Raspberry Pi toolchain
+      run: |
+        wget -q https://freefr.dl.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
+        sudo tar xfz cross-gcc-10.2.0-pi_0-1.tar.gz -C /opt
     - name: Cross-compile Python 3.7.3
       run: |
-        sudo apt-get install -y -qq gcc-arm-linux-gnueabihf
-        export PATH=`pwd`/build/bin:${PATH}
+        export PATH=`pwd`/build/bin:/opt/cross-pi-gcc-10.2.0-0/bin:${PATH}
         mkdir host
         cd host
         tar xJf ../Python-3.7.3.tar.xz
@@ -39,27 +42,27 @@ jobs:
     - name: Install and configure rust-cross
       run: |
         rustup target add arm-unknown-linux-gnueabihf
-        mkdir -p ~/.cargo
-        cat >>~/.cargo/config <<EOF
-        [target.arm-unknown-linux-gnueabihf]
-        linker = "arm-linux-gnueabihf-gcc"
-        EOF
       shell: bash
     - name: Install crossenv
       run: |
+        export PATH=/opt/cross-pi-gcc-10.2.0-0/bin:${PATH}
         cd python
         ../build/bin/python3.7 -m pip install crossenv
         ../build/bin/python3.7 -m crossenv ../host/bin/python3.7 venv
       shell: bash
     - name: Build for target, with build dependencies
       run: |
+        export PATH=/opt/cross-pi-gcc-10.2.0-0/bin:${PATH}
         cd python
         . venv/bin/activate
         build-python -m pip install setuptools_rust
         build-python -m pip install wheel
         export CARGO_BUILD_TARGET=arm-unknown-linux-gnueabihf
+        export CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
         cross-python -m pip install setuptools_rust
         cross-python -m pip install wheel
+        # Workaround: https://github.com/benfogle/crossenv/issues/65
+        sed -i 's|'LIBRARY_PATH'|'LIBRARY_PATH_DISABLED'|g' venv/cross/bin/python
         cross-python setup.py bdist_wheel
       shell: bash
     - name: Archive target wheel
