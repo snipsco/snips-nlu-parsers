@@ -1,0 +1,73 @@
+name: Build package for armv7l with crossenv
+on:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile Python 3.7.3
+      run: |
+        wget -q https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz
+        mkdir build
+        cd build
+        tar xJf ../Python-3.7.3.tar.xz
+        cd Python-3.7.3
+        ./configure --prefix=`pwd`/../
+        make -j -l 4
+        make install
+      shell: bash
+    - name: Get Raspberry Pi toolchain
+      run: |
+        wget -q https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%203A%2B%2C%203B%2B%2C%204/cross-gcc-10.2.0-pi_3%2B.tar.gz
+        sudo tar xfz cross-gcc-10.2.0-pi_3+.tar.gz -C /opt
+    - name: Cross-compile Python 3.7.3
+      run: |
+        export PATH=`pwd`/build/bin:/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
+        mkdir host
+        cd host
+        tar xJf ../Python-3.7.3.tar.xz
+        cd Python-3.7.3
+        ./configure \
+                --prefix=`pwd`/../ \
+                --host=arm-linux-gnueabihf \
+                --build=x86_64-linux-gnu \
+                --without-ensurepip \
+                ac_cv_buggy_getaddrinfo=no \
+                ac_cv_file__dev_ptmx=yes \
+                ac_cv_file__dev_ptc=no
+        make -j -l 4
+        make install
+      shell: bash
+    - name: Install and configure rust-cross
+      run: |
+        rustup target add arm-unknown-linux-gnueabihf
+      shell: bash
+    - name: Install crossenv
+      run: |
+        export PATH=/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
+        cd python
+        ../build/bin/python3.7 -m pip install crossenv
+        ../build/bin/python3.7 -m crossenv ../host/bin/python3.7 venv
+      shell: bash
+    - name: Build for target, with build dependencies
+      run: |
+        export PATH=/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
+        cd python
+        . venv/bin/activate
+        build-python -m pip install setuptools_rust
+        build-python -m pip install wheel
+        export CARGO_BUILD_TARGET=arm-unknown-linux-gnueabihf
+        export CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+        cross-python -m pip install setuptools_rust
+        cross-python -m pip install wheel
+        # Workaround: https://github.com/benfogle/crossenv/issues/65
+        sed -i 's|'LIBRARY_PATH'|'LIBRARY_PATH_DISABLED'|g' venv/cross/bin/python
+        cross-python setup.py bdist_wheel
+      shell: bash
+    - name: Archive target wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheels
+        path: |
+            python/dist/*.whl

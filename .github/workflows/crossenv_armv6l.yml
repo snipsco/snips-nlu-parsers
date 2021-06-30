@@ -1,4 +1,4 @@
-name: Build package with crossenv
+name: Build package for armv6l with crossenv
 on:
   push:
 jobs:
