@@ -1,4 +1,4 @@
-name: Build package for armv7l with crossenv
+name: Build package for Bullseye armv7l with crossenv
 on:
   push:
 jobs:
@@ -6,28 +6,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Compile Python 3.7.3
+    - name: Compile Python 3.9.2
       run: |
-        wget -q https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz
+        wget -q https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz
         mkdir build
         cd build
-        tar xJf ../Python-3.7.3.tar.xz
-        cd Python-3.7.3
+        tar xJf ../Python-3.9.2.tar.xz
+        cd Python-3.9.2
         ./configure --prefix=`pwd`/../
         make -j -l 4
         make install
       shell: bash
-    - name: Get Raspberry Pi toolchain
+    - name: Get Raspberry Pi Bullseye armv7l toolchain
       run: |
-        wget -q https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%203A%2B%2C%203B%2B%2C%204/cross-gcc-10.2.0-pi_3%2B.tar.gz
+        wget -q https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Bullseye/GCC%2010.2.0/Raspberry%20Pi%203A%2B%2C%203B%2B%2C%204/cross-gcc-10.2.0-pi_3%2B.tar.gz
         sudo tar xfz cross-gcc-10.2.0-pi_3+.tar.gz -C /opt
-    - name: Cross-compile Python 3.7.3
+    - name: Cross-compile Python 3.9.2
       run: |
         export PATH=`pwd`/build/bin:/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
         mkdir host
         cd host
-        tar xJf ../Python-3.7.3.tar.xz
-        cd Python-3.7.3
+        tar xJf ../Python-3.9.2.tar.xz
+        cd Python-3.9.2
         ./configure \
                 --prefix=`pwd`/../ \
                 --host=arm-linux-gnueabihf \
@@ -35,7 +35,8 @@ jobs:
                 --without-ensurepip \
                 ac_cv_buggy_getaddrinfo=no \
                 ac_cv_file__dev_ptmx=yes \
-                ac_cv_file__dev_ptc=no
+                ac_cv_file__dev_ptc=no \
+                || cat config.log
         make -j -l 4
         make install
       shell: bash
@@ -47,8 +48,8 @@ jobs:
       run: |
         export PATH=/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
         cd python
-        ../build/bin/python3.7 -m pip install crossenv
-        ../build/bin/python3.7 -m crossenv ../host/bin/python3.7 venv
+        ../build/bin/python3.9 -m pip install crossenv
+        ../build/bin/python3.9 -m crossenv ../host/bin/python3.9 venv
       shell: bash
     - name: Build for target, with build dependencies
       run: |
