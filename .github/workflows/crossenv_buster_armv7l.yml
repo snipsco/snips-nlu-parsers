@@ -1,4 +1,4 @@
-name: Build package with crossenv
+name: Build package for Buster armv7l with crossenv
 on:
   push:
 jobs:
@@ -17,13 +17,13 @@ jobs:
         make -j -l 4
         make install
       shell: bash
-    - name: Get Raspberry Pi toolchain
+    - name: Get Raspberry Pi Buster armv7l toolchain
       run: |
-        wget -q https://freefr.dl.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
-        sudo tar xfz cross-gcc-10.2.0-pi_0-1.tar.gz -C /opt
+        wget -q https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%203A%2B%2C%203B%2B%2C%204/cross-gcc-10.2.0-pi_3%2B.tar.gz
+        sudo tar xfz cross-gcc-10.2.0-pi_3+.tar.gz -C /opt
     - name: Cross-compile Python 3.7.3
       run: |
-        export PATH=`pwd`/build/bin:/opt/cross-pi-gcc-10.2.0-0/bin:${PATH}
+        export PATH=`pwd`/build/bin:/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
         mkdir host
         cd host
         tar xJf ../Python-3.7.3.tar.xz
@@ -45,14 +45,14 @@ jobs:
       shell: bash
     - name: Install crossenv
       run: |
-        export PATH=/opt/cross-pi-gcc-10.2.0-0/bin:${PATH}
+        export PATH=/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
         cd python
         ../build/bin/python3.7 -m pip install crossenv
         ../build/bin/python3.7 -m crossenv ../host/bin/python3.7 venv
       shell: bash
     - name: Build for target, with build dependencies
       run: |
-        export PATH=/opt/cross-pi-gcc-10.2.0-0/bin:${PATH}
+        export PATH=/opt/cross-pi-gcc-10.2.0-2/bin:${PATH}
         cd python
         . venv/bin/activate
         build-python -m pip install setuptools_rust
